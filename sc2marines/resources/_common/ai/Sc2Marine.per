@@ -1,0 +1,1140 @@
+
+;#load-if-defined UP-AVAILABLE
+;(load "ages\darkage.per")
+
+;#else ; No UP
+;(defrule
+;	(game-time >= 12)
+;=>
+;	(chat-to-all "This AI requires the UserPatch to work: userpatch.aiscripters.net")
+;	(disable-self))
+;(defrule
+;	(game-time >= 22)
+;=>
+;	(resign))
+;#end-if
+
+
+
+
+
+;MILITAIRE
+
+(defconst gl_nbrmilitaire 101)
+
+(defconst gl_ennemy_scout_rush 102)
+(defconst gl_ennemy_archer_scout_rush 103)
+
+(defrule
+(true)
+=>
+(set-goal gl_ennemy_scout_rush 0)
+)
+
+; (defrule
+; (true)
+; =>
+; (up-get-fact military-population 0 gl_nbrmilitaire)
+; (up-chat-data-to-player my-player-number "I have %d military" g: gl_nbrmilitaire)
+; (disable-self)
+; )
+
+
+; ;CIVIL
+
+; (defconst gl_nbrcivil 101)
+
+; (defrule
+; (true)
+; =>
+; (up-get-fact civilian-population 0 gl_nbrcivil)
+; (up-chat-data-to-player my-player-number "I have %d civilian" g: gl_nbrcivil)
+; (disable-self)
+; )
+
+;GENERAL
+
+
+;explorer
+(defrule
+(true)
+=>
+(set-strategic-number sn-percent-civilian-explorers 0)
+(set-strategic-number sn-cap-civilian-explorers 0)
+(set-strategic-number sn-number-explore-groups 1)
+(set-strategic-number sn-total-number-explorers 1)
+(disable-self)
+)
+
+(defrule
+(can-build house)
+(housing-headroom < 4)
+=>
+(build house)
+)
+
+
+
+
+
+(defrule 
+(unit-type-count house < 2)
+=>
+(set-strategic-number sn-maximum-town-size 10)
+)
+
+(defrule
+(unit-type-count house >= 5)
+=>
+(set-strategic-number sn-maximum-town-size 20)
+)
+
+(defrule
+(unit-type-count house >= 10)
+=>
+(set-strategic-number sn-maximum-town-size 30)
+)
+
+(defrule
+(unit-type-count house >= 15)
+=>
+(set-strategic-number sn-maximum-town-size 40)
+)
+
+(defrule
+(unit-type-count house >= 20)
+=>
+(set-strategic-number sn-maximum-town-size 50)
+)
+
+(defrule
+(current-age == imperial-age)
+=>
+(set-strategic-number sn-maximum-town-size 100)
+)
+
+;AGE SOMBRE
+
+;villageois
+(defrule
+(unit-type-count villager < 15)
+(can-train villager)
+(current-age == dark-age)
+=>
+(train villager)
+)
+
+;hunting boar
+
+(defrule
+(unit-type-count villager >= 8)
+(dropsite-min-distance live-boar < 30)
+(dropsite-min-distance live-boar > 0)
+=>
+(set-strategic-number sn-enable-boar-hunting 2)
+(set-strategic-number sn-minimum-number-hunters 1)
+(set-strategic-number sn-maximum-food-drop-distance 15)
+(set-strategic-number sn-maximum-hunt-drop-distance 30)
+(disable-self)
+)
+
+
+
+;town center
+(defrule
+(building-type-count town-center < 1)
+(can-build town-center)
+=>
+(build town-center)
+)
+
+;moulin
+(defrule
+(building-type-count house > 1) 
+(building-type-count mill == 0) 
+(building-type-count lumber-camp > 0)
+(resource-found food) 
+(can-build mill)
+=>
+(build mill)
+)
+
+;lumber camp
+(defrule
+(unit-type-count villager > 7)
+(resource-found wood)
+(building-type-count lumber-camp < 1)
+(can-build lumber-camp)
+=>
+(build lumber-camp)
+(set-strategic-number sn-wood-gatherer-percentage 30)
+(set-strategic-number sn-food-gatherer-percentage 70)
+(chat-local-to-self "30% des vill vont au bois")
+(chat-local-to-self "70% des vill vont au bois")
+)
+
+
+;fermes
+(defrule
+(current-age == dark-age)
+(can-build farm)
+(building-type-count lumber-camp >= 1)
+(building-type-count farm < 6)
+=>
+(build farm)
+)
+
+
+
+(defrule
+(food-amount > 400)
+(unit-type-count barracks < 1)
+(can-build barracks)
+=>
+(build barracks)
+)
+
+(defrule
+(and
+(unit-type-count villager >= 15) 
+(can-research feudal-age))
+=> 
+(research feudal-age)
+(set-strategic-number sn-food-gatherer-percentage 10)
+(set-strategic-number sn-wood-gatherer-percentage 80)
+(set-strategic-number sn-gold-gatherer-percentage 10)
+(chat-local-to-self "10% des vill vont au food")
+(chat-local-to-self "50% des vill vont au bois")
+(chat-local-to-self "10% des vill vont au gold")
+)
+
+
+;AGE FEODAL
+
+;pourcentages
+(defrule
+(current-age == feudal-age)
+=>
+(set-strategic-number sn-food-gatherer-percentage 40)
+(set-strategic-number sn-wood-gatherer-percentage 40)
+(set-strategic-number sn-gold-gatherer-percentage 20)
+(set-strategic-number sn-stone-gatherer-percentage 10)
+(chat-local-to-self "30% des vill vont au bois")
+(chat-local-to-self "50% des vill vont au food")
+(chat-local-to-self "20% des vill vont au gold")
+(chat-local-to-self "10% des vill vont au stone")
+(disable-self)
+)
+
+;double axe
+(defrule
+(current-age == feudal-age)
+(research-available ri-double-bit-axe)
+=>
+(research ri-double-bit-axe)
+)
+
+;archery range
+(defrule
+(current-age == feudal-age)
+(unit-type-count archery-range < 2)
+(can-build archery-range)
+=>
+(build archery-range)
+)
+
+;gold
+(defrule
+(current-age == feudal-age)
+(can-build mining-camp)
+(resource-found gold)
+(building-type-count mining-camp < 1)
+=>
+(build mining-camp)
+(set-strategic-number sn-gold-gatherer-percentage 10)
+(chat-local-to-self "10% des vill vont au gold")
+)
+
+;stone
+(defrule
+(current-age == feudal-age)
+(can-build mining-camp)
+(resource-found stone)
+(building-type-count mining-camp < 2 )
+=>
+(build mining-camp)
+(set-strategic-number sn-stone-gatherer-percentage 5)
+(chat-local-to-self "5% des vill vont au stone")
+)
+
+;lumber camps
+(defrule
+(current-age == feudal-age)
+(can-build lumber-camp)
+(building-type-count lumber-camp < 3)
+(resource-found wood)
+=>
+(build lumber-camp)
+)
+
+;dropsite wood
+(defrule
+(current-age > dark-age)
+(dropsite-min-distance wood > 5)
+(can-build lumber-camp)
+=>
+(build lumber-camp)
+)
+
+;dropsite gold
+(defrule
+(current-age > dark-age)
+(dropsite-min-distance gold > 5)
+(can-build mining-camp)
+=>
+(build mining-camp)
+)
+
+;dropsite stone
+(defrule
+(current-age > dark-age)
+(dropsite-min-distance stone > 5)
+(can-build mining-camp)
+=>
+(build mining-camp)
+)
+
+;farm
+(defrule
+(current-age == feudal-age)
+(can-build farm)
+(building-type-count lumber-camp > 2)
+(building-type-count farm < 15)
+=>
+(build farm)
+)
+
+;villager
+(defrule
+(current-age == feudal-age)
+(unit-type-count villager < 30)
+(can-train villager)
+=>
+(train villager)
+)
+
+;blacksmith
+(defrule
+(current-age == feudal-age)
+(unit-type-count blacksmith < 1)
+(can-build blacksmith)
+=>
+(build blacksmith)
+)
+
+;ri-loom
+(defrule
+(current-age == feudal-age)
+(research-available ri-loom)
+=>
+(research ri-loom)
+)
+
+;ri-fletching
+(defrule
+(research-available ri-fletching)
+=>
+(research ri-fletching)
+)
+
+;ri-padded archer armor
+(defrule
+(research-available ri-padded-archer-armor)
+=>
+(research ri-padded-archer-armor)
+)
+
+;units archer
+(defrule
+(current-age == feudal-age)
+(unit-type-count villager >= 20)
+(building-type-count archery-range >= 1)
+(can-train archer)
+(unit-type-count archer < 10)
+=>
+(train archer)
+)
+
+;attaque
+(defrule
+(current-age == feudal-age)
+(unit-type-count archer >= 10)
+(players-military-population 2 < 5)
+=>
+(attack-now)
+)
+
+(defrule
+(can-research castle-age)
+=> 
+(research castle-age)
+)
+
+;gold mining
+(defrule
+(current-age == feudal-age)
+(research-available ri-gold-mining)
+=>
+(research ri-gold-mining)
+)
+
+;stone mining
+(defrule
+(current-age == feudal-age)
+(research-available ri-stone-mining)
+=>
+(research ri-stone-mining)
+)
+
+;defense
+
+(defrule
+(current-age == feudal-age)
+(goal gl_ennemy_scout_rush 0)
+(or
+(players-unit-type-count 2 scout-cavalry-line >= 3)
+(players-building-type-count 2 stable >= 1)
+)
+=>
+(chat-to-all "ennemy scout rush detected")
+(set-goal gl_ennemy_scout_rush 1)
+)
+
+(defrule 
+(goal gl_ennemy_scout_rush 1)
+(building-type-count-total barracks == 0)
+(can-build barracks)
+=>
+(build barracks)
+)
+
+(defrule
+(goal gl_ennemy_scout_rush 1)
+(building-type-count barracks == 1)
+(can-train spearman-line)
+(unit-type-count spearman-line < 10)
+=>
+(train spearman-line)
+)
+
+(defrule 
+(goal gl_ennemy_scout_rush 1)
+(can-research ri-scale-mail)
+=>
+(research ri-scale-mail)
+)
+
+
+;wheelbarrow
+(defrule
+(unit-type-count villager >= 20)
+(research-available ri-wheel-barrow)
+=>
+(research ri-wheel-barrow)
+)
+
+;hand cart
+(defrule
+(unit-type-count villager >= 20)
+(research-available ri-hand-cart)
+=>
+(research ri-hand-cart)
+)
+
+;AGE DES CHATEAUX
+
+;town center
+(defrule
+(building-type-count town-center < 3)
+(can-build town-center)
+=>
+(build town-center)
+)
+
+;farm
+(defrule
+(or
+(current-age == castle-age)
+(current-age == imperial-age)
+)
+(can-build farm)
+(building-type-count farm < 25)
+=>
+(build farm)
+)
+
+;;villager
+(defrule
+(current-age == castle-age)
+(unit-type-count villager < 75)
+(can-train villager)
+=>
+(train villager)
+)
+
+;pourcentages
+(defrule
+(current-age == castle-age)
+=>
+(set-strategic-number sn-food-gatherer-percentage 40)
+(set-strategic-number sn-wood-gatherer-percentage 30)
+(set-strategic-number sn-gold-gatherer-percentage 20)
+(set-strategic-number sn-stone-gatherer-percentage 10)
+(chat-local-to-self "40% des vill vont au food")
+(chat-local-to-self "30% des vill vont au bois")
+(chat-local-to-self "20% des vill vont au gold")
+(chat-local-to-self "10% des vill vont au stone")
+(disable-self)
+)
+
+;ri-baw
+(defrule
+(can-research ri-bow-saw)
+=>
+(research ri-bow-saw)
+)
+
+;ri-gold mining
+(defrule
+(can-research ri-gold-shaft-mining)
+=>
+(research ri-gold-shaft-mining)
+)
+
+;ri-stone mining
+(defrule
+(can-research ri-stone-shaft-mining)
+=>
+(research ri-stone-shaft-mining)
+)
+
+;ri_bodkin arrow
+(defrule
+(can-research ri-bodkin-arrow)
+=>
+(research ri-bodkin-arrow)
+)
+
+;ri leather _archer arrow
+(defrule
+(can-research ri-leather-archer-armor)
+=>
+(research ri-leather-archer-armor)
+)
+
+(defrule
+(current-age == castle-age)
+(can-research ri-scale-barding)
+=>
+(research ri-scale-barding)
+)
+
+(defrule
+(can-research imperial-age)
+=> 
+(research imperial-age)
+)
+
+;ri-cahin-barding
+(defrule
+(can-research ri-chain-barding)
+=> 
+(research ri-chain-barding)
+)
+
+;ri-iron-casting
+(defrule
+(can-research ri-iron-casting)
+=> 
+(research ri-iron-casting)
+)
+
+;ri_hsbandry
+(defrule
+(current-age == castle-age)
+(can-research ri-husbandry)
+=>
+(research ri-husbandry)
+)
+
+(defrule
+(current-age == castle-age)
+(can-research ri-forging)
+=>
+(research ri-forging)
+)
+
+
+(defrule
+(or
+(current-age == castle-age)
+(current-age == imperial-age)
+)
+(building-type-count stable < 4)
+(can-build stable)
+=>
+(build stable)
+)
+
+(defrule
+(building-type-count siege-workshop < 4)
+(can-build siege-workshop)
+=>
+(build siege-workshop)
+)
+
+(defrule
+(building-type-count university < 1)
+(can-build university)
+=>
+(build university)
+)
+
+(defrule 
+(building-type-count stable >= 2)
+(unit-type-count knight < 25)
+=>
+(train knight)
+)
+
+(defrule 
+(building-type-count siege-workshop == 2)
+(unit-type-count battering-ram < 4)
+=>
+(train battering-ram)
+)
+
+(defrule
+(current-age == castle-age)
+(unit-type-count knight >= 25)
+(unit-type-count battering-ram >= 4)
+=>
+(attack-now)
+)
+
+(defrule
+(can-build castle)
+=>
+(build castle)
+)
+
+(defrule
+(can-build market)
+(building-type-count market < 1)
+=>
+(build market)
+)
+
+(defrule
+(current-age == castle-age)
+(building-type-count lumber-camp < 4)
+(resource-found wood)
+(can-build lumber-camp)
+=>
+(build lumber-camp)
+)
+
+;AGE IMPERIAL
+
+;;villager
+(defrule
+(current-age == imperial-age)
+(unit-type-count villager < 100)
+(can-train villager)
+=>
+(train villager)
+)
+
+(defrule
+(current-age == imperial-age)
+(building-type-count lumber-camp < 6)
+(resource-found wood)
+(can-build lumber-camp)
+=>
+(build lumber-camp)
+)
+
+;cavalier
+(defrule
+(unit-type-count knight-line >= 10)
+(can-research ri-cavalier)
+=>
+(research ri-cavalier)
+)
+
+;ri-paladin
+(defrule
+(unit-type-count knight-line >= 10)
+(can-research ri-paladin)
+=>
+(research ri-paladin)
+)
+
+(defrule
+(can-research ri-conscription)
+=>
+(research ri-conscription)
+)
+
+(defrule
+(can-research ri-chivalry)
+=>
+(research ri-chivalry)
+)
+
+(defrule
+(unit-type-count battering-ram-line >= 4)
+(can-research ri-capped-ram)
+=>
+(research ri-capped-ram)
+)
+
+(defrule
+(unit-type-count scout-cavalry-line >= 15)
+(can-research ri-light-cavalry)
+=>
+(research ri-light-cavalry)
+)
+
+(defrule
+(building-type-count castle >= 2)
+(can-research ri-hoardings)
+=>
+(research ri-hoardings)
+)
+
+(defrule
+(building-type-count castle >= 2)
+(can-research ri-murder-holes)
+=>
+(research ri-murder-holes)
+)
+
+(defrule
+(or
+(unit-type-count knight-line >= 10)
+(unit-type-count scout-cavalry-line >= 15)
+)
+(can-research ri-plate-barding)
+=>
+(research ri-plate-barding)
+)
+
+(defrule
+(or
+    (or
+    (unit-type-count knight-line >= 10)
+    (unit-type-count scout-cavalry-line >= 15)
+    )
+    (or
+    (unit-type-count militiaman-line >= 10)
+    (unit-type-count spearman-line >= 10)
+    )
+)
+(can-research ri-blast-furnace)
+=>
+(research ri-blast-furnace)
+)
+
+(defrule
+(or
+(unit-type-count throwing-axeman-line >= 10)
+    (or
+    (unit-type-count militiaman-line >= 10)
+    (unit-type-count spearman-line >= 10)
+    )
+)
+(can-research ri-plate-mail)
+=>
+(research ri-plate-mail)
+)
+
+(defrule
+(or
+    (or
+    (unit-type-count skirmisher-line >= 10)
+    (unit-type-count cavalry-archer-line >= 10)
+    )
+    (or
+    (building-type-count castle >= 2)
+    (unit-type-count archer-line >= 10)
+    )
+)
+(can-research ri-ballistics)
+=>
+(research ri-ballistics)
+)
+
+(defrule
+(or
+    (or
+    (unit-type-count skirmisher-line >= 10)
+    (unit-type-count cavalry-archer-line >= 10)
+    )
+    (or
+    (or
+        (building-type-count castle >= 2)
+        (unit-type-count archer-line >= 10)
+    )
+    (unit-type-count galley-line >= 10)
+    )
+)
+(can-research ri-chemistry)
+=>
+(research ri-chemistry)
+)
+
+(defrule
+(wood-amount >= 500)
+(food-amount >= 400)
+(can-research ri-masonry)
+=>
+(research ri-masonry)
+)
+
+(defrule
+(can-research ri-architecture)
+=>
+(research ri-architecture)
+)
+
+(defrule
+(or 
+(unit-type-count battering-ram >= 4)
+(unit-type-count trebuchet >= 3)
+)
+(can-research ri-siege-engineers)
+=>
+(research ri-siege-engineers)
+)
+
+
+
+;counter rules
+
+
+(defconst gl_en_infantery 200)
+(defconst gl_en_cavalery 201)
+(defconst gl_en_archer 202)
+
+(defconst gl_me_archer 203)
+
+
+;if ennemy is infantery
+(defrule
+(players-unit-type-count 2 spearman-line >= 1)
+(can-train archer-line)
+=>
+(set-goal gl_me_archer 1)
+)
+
+(defrule 
+(goal gl_me_archer 1)
+(can-research ri-fletching)
+=>
+(research ri-fletching)
+)
+
+
+
+
+;équilibrage de la nourriture
+(defrule
+(food-amount < 300)
+(gold-amount > 500)
+(can-buy-commodity food)
+=>
+(buy-commodity food)
+)
+
+
+
+(defrule
+(gold-amount < 500)
+(wood-amount > 2000)
+(can-sell-commodity wood)
+=>
+(sell-commodity wood)
+(chat-to-all "je vends du bois")
+)
+
+(defrule
+(gold-amount >= 1000)
+(stone-amount < 600)
+(can-buy-commodity stone)
+=>
+(buy-commodity stone)
+)
+
+;=====================================================================================
+;--------------------------------------rouleau----------------------------------------
+;=====================================================================================
+
+(defconst gl_rouleau 300)
+(defrule
+(true)
+=>
+(set-goal gl_rouleau 0)
+)
+
+(defrule
+(wood-amount >= 3000)
+(food-amount >= 3000)
+=>
+(set-goal gl_rouleau 1)
+)
+
+(defrule
+(goal gl_rouleau 1)
+=>
+(set-strategic-number sn-maximum-town-size 200)
+)
+
+(defrule 
+(goal gl_rouleau 1)
+(can-research ri-man-at-arms)
+=>
+(research ri-man-at-arms)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-long-swordsman)
+=>
+(research ri-long-swordsman)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-two-handed-swordsman)
+=>
+(research ri-two-handed-swordsman)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-champion)
+=>
+(research ri-champion)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-pikeman)
+=>
+(research ri-pikeman)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-halberdier)
+=>
+(research ri-halberdier)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-elite-skirmisher)
+=>
+(research ri-elite-skirmisher)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-crossbow)
+=>
+(research ri-crossbow)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-arbalest)
+=>
+(research ri-arbalest)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-heavy-cavalry-archer)
+=>
+(research ri-heavy-cavalry-archer)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-light-cavalry)
+=>
+(research ri-light-cavalry)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-hussar)
+=>
+(research ri-hussar)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-husbandry)
+=>
+(research ri-husbandry)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-supplies)
+=>
+(research ri-supplies)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-padded-archer-armor)
+=>
+(research ri-padded-archer-armor)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-leather-archer-armor)
+=>
+(research ri-leather-archer-armor)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-ring-archer-armor)
+=>
+(research ri-ring-archer-armor)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-fletching)
+=>
+(research ri-fletching)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-bodkin-arrow)
+=>
+(research ri-bodkin-arrow)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-bracer)
+=>
+(research ri-bracer)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-blast-furnace)
+=>
+(research ri-blast-furnace)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-scale-barding)
+=>
+(research ri-scale-barding)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-chain-barding)
+=>
+(research ri-chain-barding)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(can-research ri-plate-barding)
+=>
+(research ri-plate-barding)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(building-type-count-total stable <= 10)
+(can-build stable)
+=>
+(build stable)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(building-type-count-total archery-range <= 10)
+(can-build archery-range)
+=>
+(build archery-range)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(building-type-count-total barracks <= 10)
+(can-build barracks)
+=>
+(build barracks)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(unit-type-count militiaman-line <= 20)
+(can-train militiaman-line)
+=>
+(train militiaman-line)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(unit-type-count spearman-line <= 20)
+(can-train spearman-line)
+=>
+(train spearman-line)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(unit-type-count knight-line <= 30)
+(can-train knight-line)
+=>
+(train knight-line)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(unit-type-count battering-ram-line <= 10)
+(can-train battering-ram-line)
+=>
+(train battering-ram-line)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(unit-type-count archer-line <= 20)
+(can-train archer-line)
+=>
+(train archer-line)
+)
+
+(defrule
+(goal gl_rouleau 1)
+(population >= 190)
+=>
+(attack-now)
+)

@@ -1,0 +1,950 @@
+(defconst RENAME 512)
+#load-if-defined BRITON-CIV ;不列颠
+(defrule
+	(true)
+=>
+	(generate-random-number 1)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Longbowman") ;长弓兵
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined FRANKISH-CIV ;法兰克
+(defrule
+	(true)
+=>
+	(generate-random-number 3)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Joseph drathornes") ;约瑟夫 德拉索恩斯
+	(disable-self)
+)
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Belleria Ranger") ;柏勒里亚游侠
+	(disable-self)
+)
+
+(defrule
+	(random-number == 3)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Jeanne d'Arc") ;贞德
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined GOTHIC-CIV ;哥特
+(defrule
+	(true)
+=>
+	(generate-random-number 2)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Huskarl") ;近卫军
+	(disable-self)
+)
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Alaric") ;阿拉里克
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined TEUTONIC-CIV ;条顿
+(defrule
+	(true)
+=>
+	(generate-random-number 2)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Paladin Polka") ;圣骑士波尔卡
+	(disable-self)
+)
+
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Knights Templar") ;圣殿骑士
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined JAPANESE-CIV ;日本
+(defrule
+	(true)
+=>
+	(generate-random-number 2)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Samurai") ;日本武士
+	(disable-self)
+)
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Ninja") ;忍者
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined CHINESE-CIV ;中国
+(defrule
+	(true)
+=>
+	(generate-random-number 5)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Chu Ko Nu") ;诸葛弩
+	(disable-self)
+)
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Heavy Chariot") ;重型战车
+	(disable-self)
+)
+
+(defrule
+	(random-number == 3)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Garrison cavalry") ;卫戍骑兵
+	(disable-self)
+)
+
+(defrule
+	(random-number == 4)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Firearm Soldie") ;火铳手
+	(disable-self)
+)
+
+(defrule
+	(random-number == 5)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Egg shell") ;艾格骁
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined BYZANTINE-CIV ;拜占庭
+(defrule
+	(true)
+=>
+	(generate-random-number 2)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Los cavalryman") ;洛斯具装骑兵
+	(disable-self)
+)
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Centurion") ;甲胄骑兵
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined PERSIAN-CIV ;波斯
+(defrule
+	(true)
+=>
+	(generate-random-number 2)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Savar") ;萨瓦尔
+)
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "War Elephant") ;战象
+)
+
+#end-if
+
+#load-if-defined SARACEN-CIV ;萨拉森
+(defrule
+	(true)
+=>
+	(generate-random-number 1)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Mameluke") ;马穆鲁克
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined TURKISH-CIV ;土耳其
+(defrule
+	(true)
+=>
+	(generate-random-number 2)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Janissary") ;苏丹亲兵
+	(disable-self)
+)
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Royal Janissary") ;皇家苏丹亲兵
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined VIKING-CIV ;维京
+(defrule
+	(true)
+=>
+	(generate-random-number 2)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Berserk") ;狂战士
+	(disable-self)
+)
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Hrolf the Ganger") ;首领罗夫
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined MONGOL-CIV ;蒙古
+(defrule
+	(true)
+=>
+	(generate-random-number 2)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Genghis Khan") ;成吉思汗
+	(disable-self)
+)
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Mangudai") ;蒙古突骑
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined CELTIC-CIV ;凯尔特
+(defrule
+	(true)
+=>
+	(generate-random-number 4)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Queen Oliba") ;橄榄女王
+	(disable-self)
+)
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Iker Etxebarria") ;伊克尔 伊切巴里亚
+	(disable-self)
+)
+
+(defrule
+	(random-number == 3)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Bolivar") ;玻利瓦尔
+	(disable-self)
+)
+
+(defrule
+	(random-number == 4)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Mountain Raider ") ;山地突袭者
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined SPANISH-CIV ;西班牙
+(defrule
+	(true)
+=>
+	(generate-random-number 1)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Conquistador") ;西班牙征服者
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined AZTEC-CIV ;阿兹特克
+(defrule
+	(true)
+=>
+	(generate-random-number 1)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Jaguar Warrior") ;豹勇士
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined MAYAN-CIV ;玛雅
+(defrule
+	(true)
+=>
+	(generate-random-number 1)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Plumed Archer") ;羽箭手
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined HUN-CIV ;匈人
+(defrule
+	(true)
+=>
+	(generate-random-number 2)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Attila the Hun") ;阿提拉
+	(disable-self)
+)
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Tarkan") ;答刺罕骑兵
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined KOREAN-CIV ;高丽
+(defrule
+	(true)
+=>
+	(generate-random-number 1)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "War Wagon") ;高丽马车
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined ITALIAN-CIV ;意大利
+(defrule
+	(true)
+=>
+	(generate-random-number 2)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Messi mercenary") ;弥希佣兵
+	(disable-self)
+)
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Messi Crossbowman") ;弥希弩手
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined INCAN-CIV ;印加
+(defrule
+	(true)
+=>
+	(generate-random-number 1)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(true)
+=>
+	(generate-random-number 1)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Kamayuk") ;枪兵长
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined INDIAN-CIV ;印度
+(defrule
+	(true)
+=>
+	(generate-random-number 2)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Imperial Camel Rider") ;帝王骆驼兵
+	(disable-self)
+)
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Elephant Archer") ;骑象射手
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined MAGYAR-CIV ;马扎尔
+(defrule
+	(true)
+=>
+	(generate-random-number 1)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Magyar Huszar") ;马扎尔骠骑
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined SLAVIC-CIV ;斯拉夫
+(defrule
+	(true)
+=>
+	(generate-random-number 3)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Boyar") ;贵族铁骑
+	(disable-self)
+)
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Vlad Dracula") ;弗拉德 德古拉
+	(disable-self)
+)
+
+(defrule
+	(random-number == 3)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Tsar Konstantin") ;康斯坦丁沙皇
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined PORTUGUESE-CIV ;葡萄牙
+(defrule
+	(true)
+=>
+	(generate-random-number 1)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Organ Gun") ;风琴炮
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined ETHIOPIAN-CIV ;埃塞俄比亚
+(defrule
+	(true)
+=>
+	(generate-random-number 2)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Shotel Warrior") ;弯刀勇士
+	(disable-self)
+)
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Yodit") ;游娣特
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined MALIAN-CIV ;马里
+(defrule
+	(true)
+=>
+	(generate-random-number 1)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Gbeto") ;飞刀女兵
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined BERBERS-CIV ;柏柏尔
+(defrule
+	(true)
+=>
+	(generate-random-number 2)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Camel Archer") ;骆驼射手
+	(disable-self)
+)
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Genitour") ;标枪骑兵
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined KHMER-CIV ;高棉
+(defrule
+	(true)
+=>
+	(generate-random-number 1)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Ballista Elephant") ;重弩战象
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined MALAY-CIV ;马来
+(defrule
+	(true)
+=>
+	(generate-random-number 1)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Karambit Warrior") ;爪刀勇士
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined BURMESE-CIV ;缅甸
+(defrule
+	(true)
+=>
+	(generate-random-number 1)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Arambai") ;飞镖骑兵
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined VIETNAMESE-CIV ;越南
+(defrule
+	(true)
+=>
+	(generate-random-number 2)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Rattan Archer") ;藤弓兵
+	(disable-self)
+)
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Imperial Skirmisher") ;帝王掷矛手
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined LITHUANIANS-CIV ;保加利亚
+(defrule
+	(true)
+=>
+	(generate-random-number 2)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Konnik") ;龙骑兵
+	(disable-self)
+)
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Ivaylo") ;伊瓦依洛
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined BULGARIANS-CIV ;鞑靼
+(defrule
+	(true)
+=>
+	(generate-random-number 1)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Keshik") ;怯薛
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined CUMANS-CIV ;库曼
+(defrule
+	(true)
+=>
+	(generate-random-number 1)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Kipchak") ;钦察骑射手
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined TATARS-CIV ;立陶宛
+(defrule
+	(true)
+=>
+	(generate-random-number 2)
+	(set-goal RENAME 0)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Leitis") ;列提斯
+	(disable-self)
+)
+
+(defrule
+	(random-number == 2)
+	(goal RENAME 0)
+=>
+	(set-goal RENAME 1)
+	(up-change-name "Vytautas the Great") ;维陶塔斯大帝
+	(disable-self)
+)
+
+#end-if

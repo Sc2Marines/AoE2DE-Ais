@@ -1,0 +1,728 @@
+(load "counter.per")
+
+;defconsts des build order
+(defconst gl_militia_rush 1)
+(defconst gl_scout-cavalry_rush 2)
+(defconst gl_archer_rush 3)
+(defconst gl_fast_castle 4)
+(defconst gl_rouleau 5)
+(defconst gl_go_to_farm 6)
+(defconst gl_end_of_rush 7)
+
+
+
+;goal correspondant aux build order
+(defrule
+   (true)
+=>
+   (set-goal gl_militia_rush 0)
+   (set-goal gl_scout-cavalry_rush 0)
+   (set-goal gl_archer_rush 0)
+   (set-goal gl_fast_castle 0)
+   (set-goal gl_rouleau 0)
+   (set-goal gl_go_to_farm 0)
+   (set-goal gl_end_of_rush 0)
+(disable-self)
+)
+
+
+
+
+;say glhf to players
+
+(defrule
+(true)
+=>
+(chat-to-all "gl hf")
+(set-strategic-number sn-food-dropsite-distance 15)
+(disable-self)
+)
+
+
+
+;=================================================================================
+;------------------------------------GENERAL RULES--------------------------------
+;=================================================================================
+
+;house
+(defrule
+(housing-headroom < 4)
+(can-build house)
+=>
+(build house)
+)
+
+;explorer
+(defrule
+(true)
+=>
+(set-strategic-number sn-number-explore-groups 1)
+(set-strategic-number sn-maximum-explore-group-size 1)
+(set-strategic-number sn-minimum-explore-group-size 1)
+(set-strategic-number sn-total-number-explorers 1)
+(disable-self)
+)
+
+
+;=================================================================================
+;---------------------------------------DARK AGE----------------------------------
+;=================================================================================
+
+;reach feusal age
+(defrule
+(can-research feudal-age)
+=>
+(research feudal-age)
+(set-strategic-number sn-food-gatherer-percentage 20)
+(set-strategic-number sn-wood-gatherer-percentage 80)
+)
+
+;villager
+(defrule
+(current-age == dark-age)
+(unit-type-count villager < 20)
+(can-train villager)
+=>
+(train villager)
+)
+
+;lumber camp
+(defrule
+(current-age == dark-age)
+(building-type-count lumber-camp == 0)
+(can-build lumber-camp)
+(unit-type-count villager > 6)
+(resource-found wood)
+=>
+(build lumber-camp)
+(set-strategic-number sn-wood-gatherer-percentage 35)
+(set-strategic-number sn-food-gatherer-percentage 65)
+)
+
+;mill
+(defrule
+(current-age == dark-age)
+(building-type-count mill < 1)
+(can-build mill)
+(building-type-count lumber-camp > 0)
+(resource-found food)
+=>
+(build mill)
+)
+
+;farm
+(defrule
+(current-age == dark-age)
+(building-type-count farm < 8)
+(can-build farm)
+(sheep-and-forage-too-far)
+=>
+(build farm)
+)
+
+;reach feudal age => barracks
+(defrule
+(up-research-status c: feudal-age >= research-pending)
+(building-type-count barracks == 0)
+(can-build barracks)
+=>
+(build barracks)
+)
+
+;reach feudal age => miner
+(defrule
+(up-research-status c: feudal-age >= research-pending)
+(building-type-count mining-camp == 0)
+(resource-found gold)
+(can-build mining-camp)
+=>
+(build mining-camp)
+(set-strategic-number sn-food-gatherer-percentage 20)
+(set-strategic-number sn-gold-gatherer-percentage 70)
+(set-strategic-number sn-gold-gatherer-percentage 10)
+)
+
+;-------------------------------------militia rush--------------------------------
+
+;militia rush == 1 et on a plus de 10 villageois => on met 40% de villageois au bois
+(defrule
+(goal gl_militia_rush 1)
+(current-age == dark-age)
+(building-type-count barracks == 0)
+(unit-type-count villager > 10)
+(building-type-count lumber-camp >= 1)
+(building-type-count mining-camp == 0)
+(resource-found gold)
+(can-build mining-camp)
+=>
+(set-strategic-number sn-food-gatherer-percentage 50)
+(set-strategic-number sn-wood-gatherer-percentage 40)
+(set-strategic-number sn-gold-gatherer-percentage 10)
+(build mining-camp)
+)
+
+;peut construire un batiment de type barracks
+(defrule
+(goal gl_militia_rush 1)
+(current-age == dark-age)
+(building-type-count lumber-camp >= 1)
+(building-type-count barracks == 0)
+(can-build barracks)
+=>
+(set-goal gl_go_to_farm 1)
+(up-chat-data-to-self "go farm %d" g: gl_go_to_farm)
+(build barracks)
+)
+
+;forme des militaman-line
+(defrule
+(goal gl_militia_rush 1)
+(current-age == dark-age)
+(building-type-count barracks > 0)
+(unit-type-count militiaman-line < 5)
+(can-train militiaman-line)
+(building-type-count farm >= 4)
+=>
+(train militiaman-line)
+)
+
+; si  gl_go_to_farm == 1 on va faire 8 fermes
+(defrule
+(goal gl_go_to_farm 1)
+(building-type-count farm-class < 12)
+(can-build farm)
+=>
+(chat-local-using-id "farm")
+(build farm)
+)
+
+;hunting boar
+
+(defrule
+(unit-type-count villager >= 8)
+(dropsite-min-distance live-boar < 30)
+(dropsite-min-distance live-boar > 0)
+=>
+(set-strategic-number sn-enable-boar-hunting 2)
+(set-strategic-number sn-minimum-number-hunters 1)
+(set-strategic-number sn-maximum-food-drop-distance 15)
+(set-strategic-number sn-maximum-hunt-drop-distance 30)
+(disable-self)
+)
+
+;=================================================================================
+;--------------------------------------FEUDAL AGE---------------------------------
+;=================================================================================
+
+;reach castle age
+(defrule
+(can-research castle-age)
+=>
+(research castle-age)
+)
+
+;ri-loom
+(defrule
+(current-age == feudal-age)
+(can-research ri-loom)
+=>
+(research ri-loom)
+)
+
+;ri-double-bit-axe
+(defrule
+(current-age == feudal-age)
+(can-research ri-double-bit-axe)
+=>
+(research ri-double-bit-axe)
+)
+
+;redefined the villager sn
+(defrule
+(current-age == feudal-age)
+=>
+(set-strategic-number sn-food-gatherer-percentage 50)
+(set-strategic-number sn-wood-gatherer-percentage 40)
+(set-strategic-number sn-gold-gatherer-percentage 10)
+(disable-self)
+)
+
+;villager
+(defrule
+(current-age == feudal-age)
+(unit-type-count villager < 30)
+(can-train villager)
+=>
+(train villager)
+)
+
+;farm
+(defrule
+(current-age == feudal-age)
+(building-type-count farm < 18)
+(can-build farm)
+=>
+(build farm)
+)
+
+;ri-gold-mining
+(defrule
+(can-research ri-gold-mining)
+=>
+(research ri-gold-mining)
+)
+
+;lumber camp
+(defrule
+(current-age == feudal-age)
+(dropsite-min-distance wood > 2)
+(can-build lumber-camp)
+(resource-found wood)
+=>
+(build lumber-camp)
+)
+
+
+
+(defrule
+(can-build market)
+(building-type-count market == 0)
+=>
+(build market)
+)
+
+;-------------------------------------bo fast castle------------------------------
+
+;sn
+(defrule
+(current-age == feudal-age)
+(goal gl_fast_castle 1)
+(building-type-count market >= 1)
+(building-type-count blacksmith >= 1)
+=>
+(set-strategic-number sn-wood-gatherer-percentage 30)
+(set-strategic-number sn-gold-gatherer-percentage 20)
+)
+
+;market
+(defrule 
+(goal gl_fast_castle 1)
+(current-age == feudal-age)
+(building-type-count market == 0)
+(can-build market)
+=>
+(build market)
+)
+
+;blacksmith
+(defrule 
+(goal gl_fast_castle 1)
+(current-age == feudal-age)
+(building-type-count blacksmith == 0)
+(can-build blacksmith)
+=>
+(build blacksmith)
+)
+
+;stable
+(defrule
+(goal gl_fast_castle 1)
+(or
+(current-age == castle-age)
+(up-research-status c: castle-age >= research-pending)
+)
+(can-build stable)
+(building-type-count stable < 2)
+=>
+(build stable)
+)
+
+;ri-scale barding
+(defrule
+(goal gl_fast_castle 1)
+(or
+(up-research-status c: castle-age >= research-pending)
+(current-age == castle-age)
+)
+(can-research ri-scale-barding)
+=>
+(research ri-scale-barding)
+)
+
+;build blacksmith
+(defrule
+(building-type-count blacksmith == 0)
+(can-build blacksmith)
+=>
+(build blacksmith)
+)
+
+;---------------------------bo gl_militia_rush------------------------------------
+
+;si disponible on améliore ri-supplies
+(defrule
+(goal gl_militia_rush 1)
+(can-research ri-supplies)
+=>
+(research ri-supplies)
+)
+
+
+;si disponible on améliore ri-man-at-arms
+(defrule
+(goal gl_end_of_rush 0)
+(goal gl_militia_rush 1)
+(current-age == feudal-age)
+(can-research ri-man-at-arms)
+=>
+(research ri-man-at-arms)
+)
+
+;on train 15 militiaman-line
+(defrule
+(goal gl_end_of_rush 0)
+(goal gl_militia_rush 1)
+(current-age == feudal-age)
+(or
+(research-completed ri-man-at-arms)
+(up-research-status c: ri-man-at-arms >= research-pending)
+)
+(can-train militiaman-line)
+(unit-type-count militiaman-line < 8)
+=>
+(train militiaman-line)
+)
+
+;research ri-scale-mail-armor
+(defrule
+(goal gl_end_of_rush 0)
+(goal gl_militia_rush 1)
+(can-research ri-scale-mail)
+=>
+(research ri-scale-mail)
+)
+
+;research ri-forging
+(defrule
+(goal gl_end_of_rush 0)
+(research-completed ri-scale-mail)
+(goal gl_militia_rush 1)
+(can-research ri-forging)
+=>
+(research ri-forging)
+)
+
+;si on a une armée de 15 militiaman-line et que la recherche ri-forging est terminée on attaque
+(defrule
+(goal gl_end_of_rush 0)
+(goal gl_militia_rush 1)
+(current-age == feudal-age)
+(unit-type-count militiaman-line >= 8)
+(research-completed ri-forging)
+=>
+(up-reset-search 1 1 1 1)
+(up-reset-filters)
+(up-find-local c: militiaman-line c: 7)
+(up-create-group 0 0 c: 0)
+(set-goal gl_end_of_rush 1)
+)
+
+(defrule
+(goal gl_end_of_rush 0)
+=>
+   (set-strategic-number sn-task-ungrouped-soldiers 0)
+   (set-strategic-number sn-gather-idle-soldiers-at-center 1)
+)
+
+;si on passe à l'age suivant on contruit 2 écuries
+(defrule
+(or
+(up-research-status c: castle-age >= research-pending)
+(current-age == castle-age)
+)
+(can-build stable)
+(building-type-count stable < 3)
+=>
+(build stable)
+)
+
+(defrule
+(or
+(up-research-status c: castle-age >= research-pending)
+(current-age == castle-age)
+)
+(can-build archery-range)
+(building-type-count archery-range < 3)
+=>
+(build archery-range)
+)
+
+(defrule
+(or
+(current-age == castle-age)
+(up-research-status c: castle-age >= research-pending)
+)
+(can-build barracks)
+(building-type-count barracks < 3)
+=>
+(build barracks)
+)
+
+;ri-wheel-barrow
+(defrule
+(can-research ri-wheel-barrow)
+=>
+(research ri-wheel-barrow)
+)
+
+
+;=================================================================================
+;--------------------------------------CASTLE AGE---------------------------------
+;=================================================================================
+
+
+
+
+;can-build castle
+(defrule
+(current-age == castle-age)
+(building-type-count castle == 0)
+(can-build castle)
+=>
+(build castle)
+)
+
+;repartition ressources
+(defrule
+(current-age == castle-age)
+=>
+(set-strategic-number sn-wood-gatherer-percentage 30)
+(set-strategic-number sn-gold-gatherer-percentage 25)
+(set-strategic-number sn-stone-gatherer-percentage 15)
+(set-strategic-number sn-food-gatherer-percentage 30)
+)
+
+;can reach imperial age
+(defrule
+(can-research imperial-age)
+=>
+(research imperial-age)
+)
+
+;ri-shaft-mining
+(defrule
+(can-research ri-gold-shaft-mining)
+=>
+(research ri-gold-shaft-mining)
+)
+
+;farm
+(defrule
+(current-age == castle-age)
+(building-type-count farm < 30)
+(can-build farm)
+=>
+(build farm)
+)
+
+;ri-bow-sow
+(defrule
+(can-research ri-bow-saw)
+=>
+(research ri-bow-saw)
+)
+
+;knights
+(defrule
+(current-age == castle-age)
+(can-train knight-line)
+(unit-type-count knight-line < 15)
+=>
+(train knight-line)
+)
+
+;ri-chain-barding-armor
+(defrule
+(can-research ri-chain-barding)
+=>
+(research ri-chain-barding)
+)
+
+;forging
+(defrule
+(current-age == castle-age)
+(can-research ri-forging)
+=>
+(research ri-forging)
+)
+
+;iron casting
+(defrule
+(current-age == castle-age)
+(can-research ri-iron-casting)
+=>
+(research ri-iron-casting)
+)
+
+;attack
+(defrule
+(unit-type-count knight-line >= 14)
+=>
+(attack-now)
+)
+
+;build 3 town center 
+(defrule
+(building-type-count town-center < 3)
+(can-build town-center)
+=>
+(build town-center)
+)
+
+;villager
+(defrule
+(current-age == castle-age)
+(unit-type-count villager < 70)
+(can-train villager)
+=>
+(train villager)
+)
+
+;university
+(defrule
+(can-build university)
+(building-type-count university == 0)
+=>
+(build university)
+)
+
+;=================================================================================
+;--------------------------------------IMPERIAL AGE-------------------------------
+;=================================================================================
+
+;passage en mode rouleau
+(defrule
+(current-age == imperial-age)
+(up-resource-amount wood >= 2000)
+=>
+(set-goal gl_rouleau 1)
+)
+
+;villager 
+(defrule
+(current-age == imperial-age)
+(unit-type-count villager < 100)
+(can-train villager)
+=>
+(train villager)
+)
+
+;barracks < 10
+(defrule
+(current-age == imperial-age)
+(goal gl_rouleau 1)
+(building-type-count barracks < 10)
+(can-build barracks)
+=>
+(build barracks)
+)
+
+;stable < 10
+(defrule
+(current-age == imperial-age)
+(goal gl_rouleau 1)
+(building-type-count stable < 10)
+(can-build stable)
+=>
+(build stable)
+)
+
+;archery-range < 10
+(defrule
+(current-age == imperial-age)
+(goal gl_rouleau 1)
+(building-type-count archery-range < 10)
+(can-build archery-range)
+=>
+(build archery-range)
+)
+
+;siege-workshop < 5
+(defrule
+(current-age == imperial-age)
+(goal gl_rouleau 1)
+(building-type-count siege-workshop < 5)
+(can-build siege-workshop)
+=>
+(build siege-workshop)
+)
+
+
+;=================================================================================
+;--------------------------------------RESIGN-------------------------------------
+;=================================================================================
+
+;si plus de villagois et plus de town center on resign
+(defrule
+(unit-type-count villager == 0)
+(building-type-count town-center == 0)
+=>
+(resign)
+)
+
+
+;=================================================================================
+;--------------------------------------DROPSITE-----------------------------------
+;=================================================================================
+
+;gold
+(defrule
+(current-age > dark-age)
+(dropsite-min-distance gold > 5)
+(can-build mining-camp)
+(resource-found gold)
+=>
+(build mining-camp)
+)
+
+;wood
+(defrule
+(current-age > dark-age)
+(dropsite-min-distance wood > 5)
+(can-build lumber-camp)
+(resource-found wood)
+=>
+(build lumber-camp)
+)
+
+;stone
+(defrule
+(current-age > dark-age)
+(dropsite-min-distance stone > 5)
+(can-build mining-camp)
+(resource-found stone)
+=>
+(build mining-camp)
+)
+
+(defconst gl_town-size 201)
+(defrule 
+(true)
+=>
+(set-goal gl_town-size sn-maximum-town-size)
+)
+
+
+;systeme de detection de fin de mines
+(defrule 
+(resource-found gold)
+(dropsite-min-distance sn-gold-dropsite-distance > 15)
+=>
+(up-modify-goal gl_town-size c:+ 1)
+)
+
+(defrule
+(true)
+=>
+(set-strategic-number sn-maximum-town-size gl_town-size)
+)

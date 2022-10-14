@@ -1,0 +1,3666 @@
+(defrule
+(or	(strategic-number sn-focus-player-number >= 9)
+(or	(strategic-number sn-focus-player-number <= 0)
+	(stance-toward focus-player ally)))
+	(strategic-number sn-target-player-number >= 1)
+	(strategic-number sn-target-player-number <= 8)
+(not	(stance-toward target-player ally))
+	(player-in-game target-player)
+=>
+	(up-modify-goal temporary-goal s:= sn-target-player-number); to prevent further bugs
+	(up-modify-sn sn-focus-player-number s:= sn-target-player-number); should be an enemy
+	(chat-to-player my-player-number "Debugging focus player. 3"))
+
+
+(defrule
+	(goal landnomad yes)
+=>
+	(up-full-reset-search)
+	(up-find-local c: villager-class c: 6)
+	(up-get-search-state local-total)
+	(up-modify-goal temporary-goal3 g:= local-last)
+	(up-modify-goal temporary-goal6 g:= local-last)
+	(up-modify-goal temporary-goal6 c:- 1)
+	(set-goal temporary-goal4 0)
+	(set-goal temporary-goal5 0)
+	(set-goal temporary-goal2 -1)
+	(set-goal temporary-goal3 0)
+	(set-goal temporary-goal5 0)
+	(disable-self))
+(defrule
+	(goal landnomad yes)
+	(up-compare-goal temporary-goal6 > 0)
+	(up-compare-goal temporary-goal4 g:< local-last)
+	(up-compare-goal temporary-goal5 g:< local-last)
+=>
+	(up-set-target-object search-local g: temporary-goal4)
+	(up-get-point position-object point-x)
+	(up-set-target-object search-local g: temporary-goal5)
+	(up-get-point position-object saved-point-x)
+	(up-get-point-distance point-x saved-point-x temporary-goal)
+;	(up-chat-data-to-player my-player-number "Distance: %d" g: temporary-goal)
+;	(up-chat-data-to-player my-player-number "Temporary-goal4: %d" g: temporary-goal4)
+;	(up-chat-data-to-player my-player-number "Temporary-goal5: %d" g: temporary-goal5)
+	(up-modify-goal temporary-goal5 c:+ 1))
+(defrule
+	(goal landnomad yes)
+	(up-compare-goal temporary-goal6 > 0)
+	(up-compare-goal point-x > 0)
+	(up-compare-goal saved-point-x > 0)
+	(up-compare-goal temporary-goal g:> temporary-goal2)
+=>
+	(up-modify-goal temporary-goal2 g:= temporary-goal)
+	(up-modify-goal 504 g:= temporary-goal4)
+	(up-modify-goal 505 g:= temporary-goal5)
+	(up-modify-goal 505 c:- 1)
+;	(up-chat-data-to-player my-player-number "Highest villager distance: %d" g: temporary-goal2)
+)
+(defrule
+	(goal landnomad yes)
+	(up-compare-goal temporary-goal3 > 0)
+=>
+	(up-modify-goal temporary-goal3 c:- 1)
+	(up-jump-rule -3))
+(defrule
+	(goal landnomad yes)
+	(up-compare-goal temporary-goal6 > 0)
+=>
+	(up-modify-goal temporary-goal4 c:+ 1)
+	(set-goal temporary-goal5 0)
+	(up-modify-goal temporary-goal3 g:= local-last)
+	(up-modify-goal temporary-goal6 c:- 1)
+	(up-jump-rule -4))
+
+(defrule
+	(goal landnomad yes)
+=>
+;	(up-chat-data-to-player my-player-number "Highest villager distance: %d" g: temporary-goal2)
+;	(up-chat-data-to-player my-player-number ".504: %d" g: 504)
+;	(up-chat-data-to-player my-player-number ".505: %d" g: 505)
+	(up-full-reset-search)
+	(up-find-local c: villager-class c: 6)
+	(up-set-target-object search-local g: 504)
+	(up-get-point position-object point-x)
+	(up-set-target-object search-local g: 505)
+	(up-get-point position-object saved-point-x)
+	(up-lerp-percent point-x saved-point-x c: 50)
+	(up-get-point position-center temporary-point-x)
+	(up-lerp-tiles point-x temporary-point-x c: -8)
+	(up-set-target-point point-x)
+	(up-target-point 0 action-move -1 -1)
+	(disable-self))
+
+(defrule
+	(goal landnomad yes)
+	(goal 511 -1)
+;	(game-time > 2); test
+=>
+	(up-full-reset-search)
+	(up-find-local c: villager-class c: 6)
+	(up-set-target-object search-local g: 504)
+	(up-get-point position-object point-x)
+	(up-set-target-object search-local g: 505)
+	(up-get-point position-object saved-point-x)
+	(up-get-point-distance point-x saved-point-x temporary-goal2)
+;	(up-chat-data-to-player my-player-number "Distance: %d" g: temporary-goal2)
+	(up-jump-rule 1))    
+(defrule
+	(game-time < 180)
+	(unit-type-count-total villager >= 1)
+	(building-type-count-total town-center <= 0)
+	(building-type-count-total lumber-camp <= 0)
+(or	(strategic-number sn-number-explore-groups < 100)
+	(strategic-number sn-minimum-civilian-explorers < 99))
+=>
+	(set-strategic-number sn-number-explore-groups 100)
+	(set-strategic-number sn-total-number-explorers 100)
+	(set-strategic-number sn-percent-civilian-gatherers 0)
+	(set-strategic-number sn-cap-civilian-gatherers 0)
+	(set-strategic-number sn-minimum-civilian-explorers 99)
+	(set-strategic-number sn-cap-civilian-explorers 99)
+	(set-strategic-number sn-percent-civilian-explorers 100)
+	(set-strategic-number sn-camp-max-distance 30); 40
+;	(chat-local-to-self "Nomad exploration.")
+)
+
+(defrule
+	(goal landnomad yes)
+(or	(up-compare-goal temporary-goal2 <= 25)
+(or	(game-time >= 48); back-up; 55
+	(building-type-count-total lumber-camp >= 1)))
+=>
+	(set-goal 511 0)
+	(up-full-reset-search)
+	(up-find-local c: villager-class c: 6)
+	(up-target-point 0 action-stop -1 -1)
+	(up-modify-sn sn-maximum-wood-drop-distance g:= map-size)
+	(disable-self))
+
+
+(defrule
+	(goal migration-state 1)
+(or	(up-compare-const wk-game == 1)
+	(current-age >= feudal-age))
+=>
+	(up-jump-rule 2))
+(defrule
+	(game-time < 10)
+	(wood-amount >= 275)
+	(building-type-count-total town-center <= 0)
+=>
+	(set-goal nomaden yes)
+	(chat-local-to-self "Nomad.")
+	(disable-self))
+(defrule
+	(game-time < 10)
+	(wood-amount < 275)
+	(building-type-count-total town-center <= 0)
+=>
+	(set-goal nomaden yes)
+	(set-goal landnomad yes)
+	(chat-local-to-self "Land-Nomad.")
+	(disable-self)); end jump
+(defrule
+	(goal landnomad yes)
+	(building-type-count-total lumber-camp >= 1)
+	(dropsite-min-distance wood s:> sn-maximum-wood-drop-distance); chop wood at any distance
+	(strategic-number sn-maximum-wood-drop-distance g:< map-size)
+=>
+	(up-modify-sn sn-maximum-wood-drop-distance g:= map-size))
+
+
+(defrule
+	(wood-amount < 275);
+;	(game-time < 480)
+	(building-type-count town-center <= 0)
+(or	(building-type-count-total town-center >= 1)
+	(building-type-count-total lumber-camp >= 1))
+(or	(strategic-number sn-number-explore-groups != 1)
+	(strategic-number sn-percent-civilian-explorers != 0))
+=>
+	(up-reset-scouts)
+	(set-strategic-number sn-number-explore-groups 1)
+	(set-strategic-number sn-total-number-explorers 1)
+	(set-strategic-number sn-percent-civilian-gatherers 100)
+	(set-strategic-number sn-cap-civilian-gatherers 1000)
+	(set-strategic-number sn-cap-civilian-explorers 0)
+	(set-strategic-number sn-percent-civilian-explorers 0)
+	(set-strategic-number sn-minimum-civilian-explorers 0))
+
+(defrule
+	(goal nomaden yes)
+	(building-type-count town-center >= 1)
+(nor	(resource-found food)
+	(up-compare-goal mysheep >= 3))
+=>
+	(up-reset-scouts);
+	(set-strategic-number sn-percent-civilian-explorers 100)
+	(set-strategic-number sn-cap-civilian-explorers 1)
+	(set-strategic-number sn-minimum-civilian-explorers 1)
+	(set-strategic-number sn-total-number-explorers 2)
+	(set-strategic-number sn-number-explore-groups 2)
+;	(chat-local-to-self "Exploring for food.")
+	(disable-self))
+(defrule
+	(goal nomaden yes)
+	(building-type-count town-center >= 1)
+(or	(resource-found food)
+	(up-compare-goal mysheep >= 3))
+=>
+	(up-reset-scouts);
+	(set-strategic-number sn-percent-civilian-explorers 0)
+	(set-strategic-number sn-cap-civilian-explorers 0)
+	(set-strategic-number sn-minimum-civilian-explorers 0)
+	(set-strategic-number sn-total-number-explorers 1)
+	(set-strategic-number sn-number-explore-groups 1)
+;	(chat-local-to-self "Nomad: Food source found.")
+	(disable-self))
+(defrule
+	(goal nomaden yes)
+	(building-type-count town-center < 1)
+	(game-time < 600)
+	(wood-amount >= 25)
+(or	(wood-amount >= 260)
+	(and	(wood-amount < 30)
+		(building-type-count-total town-center >= 1)))
+	(wood-amount < 275)
+	(stone-amount >= tc-stone)
+=>
+	(up-drop-resources wood c: 5))
+
+(defrule
+	(goal nomaden yes)
+	(building-type-count town-center >= 1)
+	(dropsite-min-distance boar-hunting >= 35)
+;(or	(dropsite-min-distance deer-hunting > 30)
+	(dropsite-min-distance deer-hunting s:> sn-maximum-hunt-drop-distance);); test
+	(up-compare-goal mysheep < 1)
+	(up-compare-goal total-food-amount < 100); 50
+	(building-type-count-total mill < 1)
+	(wood-amount >= 120)
+=>
+	(up-reset-scouts)
+	(set-strategic-number sn-number-explore-groups 2)
+	(set-strategic-number sn-total-number-explorers 2)
+	(set-strategic-number sn-cap-civilian-explorers 1)
+	(set-strategic-number sn-percent-civilian-explorers 100)
+	(set-strategic-number sn-minimum-civilian-explorers 1)
+	(disable-self))
+(defrule
+	(goal nomaden yes)
+	(building-type-count town-center >= 1)
+;(or	(dropsite-min-distance boar-hunting <= 34)
+(or	(dropsite-min-distance deer-hunting s:<= sn-maximum-hunt-drop-distance);(dropsite-min-distance deer-hunting <= 30)
+(or	(up-compare-goal mysheep >= 2)
+(or	(up-compare-goal total-food-amount >= 50)
+	(building-type-count-total mill >= 1))));)
+	(strategic-number sn-percent-civilian-explorers >= 99)
+=>
+	(set-strategic-number sn-number-explore-groups 1)
+	(set-strategic-number sn-total-number-explorers 1)
+	(set-strategic-number sn-cap-civilian-explorers 0)
+	(set-strategic-number sn-percent-civilian-explorers 0)
+	(set-strategic-number sn-minimum-civilian-explorers 0)
+	(disable-self)); test
+
+(defrule
+	(goal nomaden yes)
+	(building-type-count-total lumber-camp >= 1)
+=>
+	(up-reset-scouts)
+	(set-strategic-number sn-number-explore-groups 1)
+	(set-strategic-number sn-total-number-explorers 1)
+	(set-strategic-number sn-percent-civilian-gatherers 0)
+	(set-strategic-number sn-cap-civilian-gatherers 1000)
+	(set-strategic-number sn-cap-civilian-explorers 0)
+	(set-strategic-number sn-percent-civilian-explorers 0)
+	(set-strategic-number sn-minimum-civilian-explorers 0)
+	(disable-self))
+
+(defrule
+	(goal nomaden yes)
+	(building-type-count-total town-center <= 0)
+(or	(building-type-count lumber-camp >= 1)
+	(wood-amount >= tc-100-wood))
+	(wood-amount >= housetc-cost)
+	(stone-amount >= tc-stone)
+;	(strategic-number sn-minimum-civilian-explorers < 1)
+=>
+	(up-reset-scouts)
+	(set-strategic-number sn-number-explore-groups 2)
+	(set-strategic-number sn-total-number-explorers 2)
+	(set-strategic-number sn-percent-civilian-gatherers 0)
+	(set-strategic-number sn-cap-civilian-gatherers 1000)
+	(set-strategic-number sn-cap-civilian-explorers 1)
+	(set-strategic-number sn-percent-civilian-explorers 100)
+	(set-strategic-number sn-minimum-civilian-explorers 1)
+	(disable-self)); test
+(defrule
+	(goal nomaden yes)
+	(building-type-count-total town-center >= 1)
+=>
+	(up-reset-scouts)
+	(up-get-fact game-time 0 temporary-goal)
+	(up-modify-goal temporary-goal c:+ 2)
+	(up-modify-goal temporary-goal c:/ 2)
+	(up-modify-goal temporary-goal c:+ home-exploration-time)
+	(up-modify-sn sn-home-exploration-time g:max temporary-goal)
+	(set-strategic-number sn-number-explore-groups 1)
+	(set-strategic-number sn-total-number-explorers 1)
+	(set-strategic-number sn-percent-civilian-gatherers 0)
+	(set-strategic-number sn-cap-civilian-gatherers 1000)
+	(set-strategic-number sn-cap-civilian-explorers 0)
+	(set-strategic-number sn-percent-civilian-explorers 0)
+	(set-strategic-number sn-minimum-civilian-explorers 0)
+	(disable-self))
+
+(defrule
+	(goal nomaden yes)
+	(building-type-count-total town-center >= 1)
+	(building-type-count-total mill >= 1)
+	(strategic-number sn-number-explore-groups != 1)
+=>
+	(up-reset-scouts)
+	(set-strategic-number sn-number-explore-groups 1)
+	(set-strategic-number sn-total-number-explorers 1)
+	(set-strategic-number sn-percent-civilian-gatherers 0)
+	(set-strategic-number sn-cap-civilian-gatherers 1000)
+	(set-strategic-number sn-cap-civilian-explorers 0)
+	(set-strategic-number sn-percent-civilian-explorers 0)
+	(set-strategic-number sn-minimum-civilian-explorers 0)
+	(disable-self)); test
+
+
+
+
+
+
+
+(defrule
+(or	(up-compare-goal landnomad != yes)
+	(and	(game-time < 48); back-up
+		(goal 511 -1))); vills still didn't meet up yet
+=>
+	(up-jump-rule 1))
+(defrule
+	(game-time > 5)
+	(up-gaia-type-count-total c: wood >= 15)
+	(building-type-count-total town-center <= 0)
+	(building-type-count-total lumber-camp <= 0)
+	(wood-amount >= 100)
+	(building-available lumber-camp)
+;	(can-build lumber-camp)
+=>
+	(set-goal landnomad 3)
+	(set-strategic-number sn-wood-gatherer-percentage 100)
+	(chat-local-to-self "Vills met.")); split
+
+(defrule
+	(up-pending-placement c: lumber-camp)
+	(timer-triggered fivesec)
+;(or	(goal landnomad yes)
+;(or
+	(goal landnomad 3)
+;	(goal nomaden yes)))
+	(game-time < 180)
+	(building-type-count-total lumber-camp < 1)
+=>
+;	(up-modify-sn sn-camp-max-distance g:= map-size)
+	(chat-local-to-self "Resetting lc-placement.")
+	(up-reset-placement c: lumber-camp)
+	(disable-self))
+(defrule
+	(timer-triggered fivesec)
+	(building-type-count-total lumber-camp <= 0)
+	(game-time >= 45)
+	(goal landnomad 3)
+=>
+	(up-release-escrow)
+	(set-escrow-percentage wood 0)
+	(set-goal escrowing 0)
+	(chat-local-to-self "Resetting lc-placement.")
+	(up-reset-placement c: lumber-camp))
+
+
+(defrule
+	(goal migration-state 1)
+	(building-type-count-total lumber-camp <= 0)
+	(wood-amount < campdock-cost)
+(or	(wood-amount < 125)
+	(building-type-count-total dock <= 0))
+(or	(up-compare-const instant-dock >= 1)
+	(building-type-count-total town-center <= 0))
+	(unit-type-count-total transport-ship <= 0)
+=>
+	(up-jump-rule 1))
+(defrule
+(nand	(resource-found wood)
+(and	(unit-type-count villager >= 1)
+(and	(goal landnomad 3)
+(and	(up-gaia-type-count-total c: wood >= 15)
+(and	(building-type-count-total town-center <= 0)
+(and	(building-type-count-total lumber-camp <= 0)
+(and	(up-pending-objects c: lumber-camp <= 0)
+	(up-compare-flag escrow-flag2 != 16777216))))))))
+=>
+	(up-jump-rule 9))
+(defrule
+	(true)
+=>
+	(up-get-fact game-time 0 temporary-goal)
+	(up-modify-goal temporary-goal c:- 15)
+	(up-modify-goal temporary-goal c:/ 3)
+	(up-modify-goal temporary-goal c:max 0)
+	(up-modify-goal temporary-goal c:min 252)
+	(set-goal temporary-goal2 8)
+	(set-goal temporary-goal3 0)
+	(set-goal temporary-goal4 0)
+	(up-full-reset-search))
+(defrule; end neg jump
+	(true)
+=>
+	(up-find-local c: villager-class c: 1)
+	(up-set-target-object search-local c: 0)
+	(up-get-point position-object object-point-x)
+	(up-set-target-point object-point-x)
+	(up-filter-distance c: -1 g: temporary-goal2)
+	(up-filter-status c: status-ready c: list-active)
+	(up-find-resource c: wood c: 24)
+	(up-get-search-state local-total))
+(defrule
+	(up-compare-goal local-last >= 1)
+	(up-compare-goal remote-last >= 8)
+=>
+	(up-clean-search search-remote object-data-precise-distance search-order-asc)
+	(up-remove-objects search-remote object-data-index >= 1);
+	(up-set-target-object search-remote c: 0)
+	(up-get-point position-object object-point-x)
+	(up-set-target-point object-point-x)
+	(set-goal temporary-goal4 1)
+	(up-jump-rule 2))
+(defrule; end neg jump 2
+	(up-compare-goal local-last >= 1)
+	(up-compare-goal remote-last < 3)
+	(up-compare-goal temporary-goal3 g:< villagercount)
+=>
+	(up-modify-goal temporary-goal3 c:+ 1)
+	(up-reset-search 0 1 1 1)
+	(up-reset-filters)
+	(up-jump-rule -3))
+(defrule
+	(up-compare-goal remote-last < 3)
+	(up-compare-goal temporary-goal3 g:>= villagercount)
+	(up-compare-goal temporary-goal2 < 24)
+=>
+	(up-modify-goal temporary-goal2 c:+ 8)
+	(set-goal temporary-goal3 0)
+	(up-full-reset-search)
+	(up-jump-rule -4))
+(defrule
+	(goal temporary-goal4 1)
+=>
+	(up-reset-search 0 0 1 1)
+	(up-reset-filters)
+	(up-filter-distance c: -1 c: 2); 1
+	(up-filter-status c: status-ready c: list-active)
+	(up-find-resource c: wood c: 9)
+	(up-get-search-state local-total))
+(defrule
+	(goal temporary-goal4 1)
+	(game-time < 60)
+	(up-compare-goal remote-last < 3)
+(or	(up-compare-goal temporary-goal3 g:< villagercount)
+	(up-compare-goal temporary-goal2 < 24))
+=>
+	(set-goal temporary-goal4 0)
+	(up-jump-rule -4))
+(defrule
+	(resource-found wood)
+	(goal temporary-goal4 1)
+(not	(up-pending-placement c: lumber-camp))
+	(can-build lumber-camp)
+=>
+;	(chat-local-to-self "WWWWWWWWWWWW.")
+	(up-copy-point building-point-x object-point-x)
+;	(up-send-flare building-point-x)
+	(set-strategic-number sn-placement-zone-size 3); 2
+	(up-modify-sn sn-placement-zone-size g:+ temporary-goal)
+	(up-build place-point 0 c: lumber-camp)); end jump
+
+(defrule
+	(goal landnomad 3)
+	(building-type-count-total lumber-camp < 1)
+=>
+	(set-goal buildlumber no)
+	(disable-self))
+(defrule
+	(goal landnomad 3)
+	(building-type-count-total lumber-camp >= 1)
+=>
+	(up-modify-sn sn-maximum-food-drop-distance c:max 16); 20
+	(set-strategic-number sn-maximum-wood-drop-distance 30)
+	(set-goal landnomad yes)
+;	(set-goal buildlumber yes)
+	(disable-self))
+
+
+
+(defrule
+(or	(goal migration-state 1)
+(or	(building-type-count-total town-center >= 1)
+(or	(game-time < 12)
+(or	(game-time >= 600)
+	(and	(goal nomaden no)
+		(goal landnomad no))))))
+=>
+	(up-jump-rule 3))
+(defrule
+	(up-pending-placement c: town-center)
+	(timer-triggered MSuperiority); fivesec
+	(building-type-count-total town-center < 1)
+=>
+	(set-strategic-number sn-percent-civilian-explorers 100)
+	(set-strategic-number sn-minimum-civilian-explorers 1)
+	(set-strategic-number sn-cap-civilian-explorers 1)
+	(set-strategic-number sn-total-number-explorers 2)
+	(set-strategic-number sn-number-explore-groups 2)
+	(chat-local-to-self "Resetting tc-placement.")
+	(up-reset-placement c: town-center))
+(defrule
+	(building-type-count-total town-center < 1)
+	(building-type-count-total lumber-camp >= 1)
+	(can-build town-center)
+=>
+	(chat-to-player my-player-number "TC.1")
+	(set-strategic-number sn-placement-zone-size 16); 20
+	(up-set-placement-data my-player-number lumber-camp c: 1)
+	(set-strategic-number sn-allow-adjacent-dropsites 1)
+	(set-strategic-number sn-town-center-placement mill);
+	(up-build place-control 0 c: town-center)
+	(up-jump-rule 1))
+(defrule
+	(building-type-count-total town-center < 1)
+	(can-build town-center)
+=>
+	(chat-to-player my-player-number "TC.2")
+	(set-strategic-number sn-placement-zone-size 16); 20
+	(up-set-placement-data my-player-number villager-class c: 1)
+	(set-strategic-number sn-allow-adjacent-dropsites 1)
+	(set-strategic-number sn-town-center-placement mill);
+	(up-build place-control 0 c: town-center)); end jump
+
+
+(defrule
+	(goal nomaden yes)
+	(up-compare-goal landnomad >= yes)
+	(up-compare-goal migration-state != 1)
+	(housing-headroom < 3)
+	(building-type-count-total town-center >= 1)
+	(building-type-count-total house <= 0)
+	(can-build house)
+=>
+	(up-set-placement-data my-player-number lumber-camp c: 1)
+	(set-strategic-number sn-placement-zone-size 3); 2
+	(up-build place-control 0 c: house)
+	(disable-self))
+
+(defrule
+	(unit-type-count packed-town-center >= 1)
+(or	(game-time < 2)
+	(timer-triggered embassy))
+=>
+	(up-full-reset-search)
+	(up-find-local c: packed-town-center c: 16)
+	(up-target-objects 0 action-unpack -1 -1))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(defrule
+(or	(unit-type-count monastery-class <= 0)
+(or	(players-unit-type-count every-enemy villager <= 0)
+(or	(unit-type-count-total villager >= 2)
+	(and	(building-type-count town-center >= 1)
+		(unit-type-count-total villager >= 1)))))
+=>
+	(up-jump-rule 7))
+(defrule
+	(true)
+=>
+	(up-modify-goal temporary-goal s:= sn-focus-player-number)
+	(set-strategic-number sn-focus-player-number 1)
+	(up-full-reset-search)
+	(up-filter-exclude -1 actionid-convert orderid-convert -1)
+	(up-find-local c: monastery-class c: 1)
+	(up-remove-objects search-local object-data-carry < 100)
+	(set-goal temporary-goal2 0))
+(defrule; end neg jump
+	(up-set-target-object search-local c: 0)
+(not	(stance-toward focus-player ally))
+	(players-unit-type-count focus-player villager >= 1)
+=>
+	(up-reset-filters)
+	(up-get-point position-object point-x)
+	(up-set-target-point point-x)
+	(up-find-remote c: villager-class c: 40)
+	(up-clean-search search-remote object-data-distance search-order-asc))
+(defrule
+	(goal temporary-goal2 0)
+=>
+	(up-remove-objects search-remote object-data-heresy >= 1))
+(defrule
+	(up-set-target-object search-local c: 0)
+(not	(up-set-target-object search-remote c: 0))
+	(strategic-number sn-focus-player-number < 8)
+=>
+	(up-reset-search 0 0 1 1)
+	(up-modify-sn sn-focus-player-number c:+ 1)
+	(up-jump-rule -3))
+(defrule
+	(up-set-target-object search-local c: 0)
+(not	(up-set-target-object search-remote c: 0))
+	(goal temporary-goal2 0)
+	(strategic-number sn-focus-player-number >= 8)
+=>
+	(set-goal temporary-goal2 1)
+	(set-strategic-number sn-focus-player-number 1)
+	(up-jump-rule -4))
+(defrule
+	(up-set-target-object search-local c: 0)
+	(up-set-target-object search-remote c: 0)
+=>
+	(chat-local-to-self "Trying to convert an enemy villager.")
+	(up-target-objects 1 action-default -1 -1))
+(defrule
+	(true)
+=>
+	(up-modify-sn sn-focus-player-number g:= temporary-goal)); end jump
+
+
+(defrule
+(or	(unit-type-count monastery-class <= 0)
+(or	(players-unit-count every-enemy <= 0)
+(or	(up-compare-const diff-fp != 1)
+	(and	(up-compare-goal gl-threat-time >= 8000)
+		(up-timer-status fivesec == timer-running)))))
+=>
+	(up-jump-rule 11))
+(defrule
+	(true)
+=>
+	(up-modify-goal temporary-goal s:= sn-focus-player-number)
+	(set-strategic-number sn-focus-player-number 1)
+	(up-full-reset-search)
+	(up-filter-exclude -1 actionid-convert orderid-convert -1)
+	(up-find-local c: monastery-class c: 240)
+	(up-remove-objects search-local object-data-carry < 100)
+	(up-remove-objects search-local object-data-action == actionid-relic)
+	(up-remove-objects search-local object-data-order == orderid-relic)
+	(set-goal temporary-goal2 0))
+(defrule; end neg jump 2
+	(up-set-target-object search-local g: temporary-goal2)
+=>
+	(up-get-point position-object object-point-x)
+	(up-set-target-point object-point-x)
+	(up-get-object-data object-data-range temporary-goal3)
+	(up-modify-goal temporary-goal3 c:+ 1))
+(defrule; end neg jump
+(not	(stance-toward focus-player ally))
+	(player-in-game focus-player)
+	(research-completed ri-atonement)
+	(up-set-target-object search-local g: temporary-goal2)
+=>
+	(up-filter-distance c: -1 g: temporary-goal3)
+	(up-filter-include cmdid-monk -1 -1 -1)
+	(up-find-remote c: all-units-class c: 40))
+(defrule
+(not	(stance-toward focus-player ally))
+	(player-in-game focus-player)
+	(up-set-target-object search-local g: temporary-goal2)
+=>
+	(up-filter-distance c: -1 g: temporary-goal3);
+	(up-filter-include cmdid-military -1 -1 -1)
+	(up-find-remote c: all-units-class c: 40)
+	(up-remove-objects search-remote object-data-no-convert == 1)
+	(up-remove-objects search-remote object-data-hero == 1);
+	(up-remove-objects search-remote object-data-heresy == 1);
+	(up-remove-objects search-remote object-data-pierce-armor > 100);
+	(up-remove-objects search-remote object-data-class == packed-trebuchet-class)
+	(up-remove-objects search-remote object-data-class == unpacked-trebuchet-class))
+(defrule
+	(up-set-target-object search-remote c: 0)
+(not	(research-completed ri-redemption))
+=>
+	(up-remove-objects search-remote object-data-class == siege-weapon-class)
+	(up-remove-objects search-remote object-data-class == scorpion-class)
+	(up-remove-objects search-remote object-data-type == organ-gun)
+	(up-remove-objects search-remote object-data-type == elite-organ-gun))
+(defrule
+	(up-set-target-object search-remote c: 0)
+(not	(research-completed ri-theocracy))
+	(unit-type-count monastery-class >= 2)
+(not	(stance-toward focus-player ally))
+	(player-in-game focus-player)
+	(up-set-target-object search-local g: temporary-goal2)
+=>
+	(up-remove-objects search-remote object-data-tasks-count >= 1));
+(defrule
+(not	(up-set-target-object search-remote c: 0))
+	(up-set-target-object search-local g: temporary-goal2)
+	(strategic-number sn-focus-player-number < 8)
+=>
+	(up-reset-search 0 0 1 1)
+	(up-modify-sn sn-focus-player-number c:+ 1)
+	(up-jump-rule -5))
+(defrule
+(not	(up-set-target-object search-remote c: 0))
+	(up-set-target-object search-local g: temporary-goal2)
+	(strategic-number sn-focus-player-number >= 8)
+=>
+	(up-reset-search 0 0 1 1)
+	(set-strategic-number sn-focus-player-number 1)
+	(up-modify-goal temporary-goal2 c:+ 1)
+	(up-jump-rule -7))	
+(defrule
+(not	(stance-toward focus-player ally))
+	(player-in-game focus-player)
+	(up-set-target-object search-remote c: 0)
+	(up-object-data object-data-class == monastery-class)
+	(research-completed ri-atonement)
+	(up-set-target-object search-local g: temporary-goal2)
+=>
+	(chat-local-to-self "Trying to convert an enemy monk.")
+	(up-remove-objects search-local object-data-index g:!= temporary-goal2)
+	(up-clean-search search-remote object-data-carry search-order-desc)
+	(up-set-target-object search-remote c: 0)
+	(up-target-objects 1 action-default -1 -1)
+	(up-jump-rule 1))
+(defrule
+(not	(stance-toward focus-player ally))
+	(player-in-game focus-player)
+	(up-set-target-object search-remote c: 0)
+	(up-set-target-object search-local g: temporary-goal2)
+=>
+	(chat-local-to-self "Trying to convert an enemy military unit.")
+	(up-remove-objects search-local object-data-index g:!= temporary-goal2)
+	(up-clean-search search-remote object-data-hitpoints search-order-desc)
+	(up-set-target-object search-remote c: 0)
+	(up-target-objects 1 action-default -1 -1)); end jump
+(defrule
+	(true)
+=>
+	(up-modify-sn sn-focus-player-number g:= temporary-goal)); end jump
+	
+	;make sure monks don't chase too far
+
+
+
+(defrule
+(or	(up-timer-status embassy != timer-triggered)
+(or	(unit-type-count villager <= 0)
+(or	(building-type-count-total town-center >= 2)
+(or	(population >= thirty-pop)
+	(players-population every-ally < thirty-pop)))))
+=>
+	(up-jump-rule 2))
+(defrule
+(nor	(building-type-count-total town-center <= 0)
+	(and	(building-type-count-total town-center <= 1)
+		(and	(goal underattack yes)
+			(and	(up-set-target-by-id g: position-self-id)
+				(up-object-data object-data-hitpoints < 1440))))); 960
+=>
+	(up-jump-rule 1))
+(defrule
+	(players-population any-ally >= thirty-pop)
+=>
+;	(chat-local-to-self "Saving villager for town-center.")
+	(up-get-player-fact this-any-ally player-number 0 temporary-goal2)
+	(up-modify-goal temporary-goal s:= sn-focus-player-number)
+	(up-modify-sn sn-focus-player-number g:= temporary-goal2)
+	(up-get-point position-focus point-x)
+	(up-get-point position-center temporary-point-x)
+	(up-lerp-tiles point-x temporary-point-x c: -20)
+	(up-modify-sn sn-focus-player-number g:= temporary-goal)
+	(up-set-target-point point-x)
+	(up-full-reset-search)
+	(up-find-local c: villager-class g: villagercount)
+	(up-clean-search search-local object-data-distance search-order-asc)
+	(up-remove-objects search-local object-data-index >= 1)
+	(up-target-point 0 action-move -1 -1)); end jumps
+
+
+(defrule
+(or	(game-time >= 1500)
+(or	(up-compare-const diff-fp != 1)
+(or	(players-current-age focus-player >= castle-age)
+(or	(up-compare-goal ttower-distance < 16)
+(or	(up-compare-goal gl-threat-time >= 6000)
+	(up-compare-goal gl-threat-time <= -1))))))
+=>
+	(up-jump-rule 7))
+(defrule
+	(true)
+=>
+	(up-modify-goal temporary-goal s:= sn-focus-player-number)
+	(up-full-reset-search)
+	(up-filter-include -1 -1 -1 on-mainland); actionid-attack
+	(up-filter-exclude -1 actionid-enter orderid-enter -1)
+	(up-find-local c: villager-class g: villagercount)
+	(up-remove-objects search-local object-data-hitpoints >= 25)
+	(up-remove-objects search-local object-data-target == dangerous-animal-class)
+	(up-remove-objects search-local object-data-target == battering-ram-line)
+	(up-clean-search search-local object-data-hitpoints search-order-asc)
+	(set-goal temporary-goal2 0)
+	(set-goal temporary-goal4 0))
+(defrule
+	(up-set-target-object search-local g: temporary-goal2)
+=>
+	(up-get-point position-object point-x)
+	(up-set-target-point point-x)
+	(up-filter-distance c: -1 c: 4)
+	(up-filter-include -1 actionid-attack -1 -1)
+	(set-strategic-number sn-focus-player-number my-player-number)
+	(up-find-remote c: all-units-class c: 16)
+	(up-modify-sn sn-focus-player-number g:= temporary-goal)
+	(up-get-search-state local-total)
+	(up-modify-goal temporary-goal3 g:= remote-total)
+	(up-reset-search 0 0 1 1)
+	(up-find-remote c: all-units-class c: 16)
+	(up-get-search-state local-total)
+	(up-reset-filters)
+	(up-modify-goal temporary-goal s:= sn-focus-player-number))
+(defrule
+	(up-compare-goal remote-total >= 1)
+	(up-set-target-object search-local g: temporary-goal2)
+(or	(up-compare-goal temporary-goal3 g:< remote-total)
+	(up-object-data object-data-hitpoints <= 16))
+=>
+	(up-remove-objects search-local object-data-index g:!= temporary-goal2)
+	(up-reset-search 0 0 1 1)
+	(set-strategic-number sn-focus-player-number my-player-number)
+	(up-filter-garrison c: -1 c: 19)
+	(up-find-remote c: castle c: 16)
+	(up-find-remote c: krepost c: 16)
+	(up-filter-garrison c: -1 c: 14)
+	(up-find-remote c: town-center c: 8)
+	(up-filter-garrison c: -1 c: 4)
+	(up-find-remote c: watch-tower c: 16)
+	(set-goal temporary-goal4 1))
+(defrule
+	(goal temporary-goal4 1)
+=>
+	(up-find-remote c: bombard-tower c: 16)
+	(up-modify-sn sn-focus-player-number g:= temporary-goal)
+	(up-clean-search search-remote object-data-distance search-order-asc)
+	(chat-local-to-self "Garrisoning villager.")
+	(up-remove-objects search-remote object-data-index >= 1)
+	(up-target-objects 0 action-garrison -1 -1)
+	(set-goal temporary-goal4 0))
+(defrule
+	(up-set-target-object search-local g: temporary-goal2)
+=>
+	(up-modify-goal temporary-goal2 c:+ 1)
+	(up-jump-rule -4))
+(defrule
+	(true)
+=>
+	(up-set-target-point position-self-x)
+	(up-full-reset-search)
+	(up-filter-include -1 actionid-attack -1 -1)
+	(up-find-local c: villager-class g: villagercount)
+	(up-remove-objects search-local object-data-target == dangerous-animal-class)
+	(up-remove-objects search-local object-data-target == battering-ram-line)
+	(up-clean-search search-local object-data-distance search-order-desc)
+	(up-remove-objects search-local object-data-index >= 1)
+	(up-set-target-object search-local c: 0)
+	(up-get-point position-object point-x)
+	(up-set-target-point point-x)
+	(up-get-object-data object-data-target-id temporary-goal)
+	(up-set-target-by-id g: temporary-goal))
+(defrule
+	(up-set-target-object search-local c: 0)
+(or	(up-object-data object-data-target-id <= -1)
+	(up-set-target-by-id g: temporary-goal))
+(or	(up-object-data object-data-target-id <= -1)
+(or	(up-object-data object-data-distance >= 13); 13
+	(up-object-data object-data-action != actionid-attack)))
+	(up-compare-goal gl-threat-time >= 3000)
+=>
+;	(chat-local-to-self "Stopping villager.")
+	(up-target-point 0 action-stop -1 -1)); end jump
+
+(defrule
+(or	(up-compare-const diff-fp != 1)
+(or	(unit-type-count villager < 10)
+	(goal attacking yes)))
+=>
+	(up-jump-rule 7))
+(defrule
+(or	(and	(not	(town-under-attack))
+		(goal underattack no))
+(or	(and	(up-unit-type-in-town c: feudal-battering-ram <= 0)
+		(up-unit-type-in-town c: battering-ram-line <= 0))
+(or	(unit-type-count infantry-class >= 8)
+(or	(unit-type-count cavalry-class >= 8)
+	(soldier-count >= 16)))))
+=>
+	(up-jump-rule 6))
+(defrule
+	(true)
+=>
+	(up-modify-goal temporary-goal3 s:= sn-focus-player-number)
+	(set-strategic-number sn-focus-player-number 1)
+	(set-goal temporary-goal 4)
+	(up-modify-goal temporary-goal2 g:= villagercount)
+	(up-modify-goal temporary-goal2 c:/ 4); 2
+	(up-modify-goal temporary-goal2 c:max 10)
+	(up-modify-goal temporary-goal2 c:min 40)
+	(up-full-reset-search)
+	(up-filter-include -1 actionid-attack -1 on-mainland)
+	(up-find-local c: villager-class g: villagercount)
+	(up-get-search-state local-total)
+	(up-modify-goal temporary-goal g:- local-total)
+	(up-full-reset-search)
+	(up-set-target-point position-self-x)
+	(up-filter-include -1 -1 -1 on-mainland))
+(defrule
+	(true)
+=>
+	(up-filter-distance c: -1 g: temporary-goal2))
+(defrule
+	(up-compare-goal temporary-goal >= 1)
+	(strategic-number sn-focus-player-number != my-player-number)
+(not	(stance-toward focus-player ally))
+	(player-valid focus-player)
+=>
+	(up-find-remote c: feudal-battering-ram c: 20)
+	(up-find-remote c: battering-ram-line c: 20))
+(defrule
+	(up-compare-goal temporary-goal >= 1)
+	(strategic-number sn-focus-player-number < 8)
+=>
+	(up-modify-sn sn-focus-player-number c:+ 1)
+	(up-jump-rule -2))
+(defrule
+	(up-set-target-object search-remote c: 0)
+=>
+	(up-chat-data-to-self "Using %d more villager(s) to attack rams." g: temporary-goal)
+	(up-get-point position-object temporary-point-x)
+	(up-set-target-point temporary-point-x)
+	(up-find-local c: villager-class g: villagercount)
+	(up-clean-search search-local object-data-distance search-order-asc)
+	(up-remove-objects search-local object-data-index g:>= temporary-goal)
+	(up-target-objects 0 action-default -1 -1))
+(defrule
+	(true)
+=>
+	(up-modify-sn sn-focus-player-number g:= temporary-goal3)); end jumps
+
+
+(defrule
+	(strategic-number sn-focus-player-number s:!= sn-target-player-number)
+	(goal retargetenemy 4)
+=>
+	(up-modify-sn sn-focus-player-number s:= sn-target-player-number)
+	(chat-to-player my-player-number "Debugging defense+help focus-player.1"))
+(defrule ; debug rule
+(or	(strategic-number sn-focus-player-number >= 9)
+(or	(strategic-number sn-focus-player-number <= 0)
+	(stance-toward focus-player ally)))
+	(strategic-number sn-target-player-number >= 1)
+	(strategic-number sn-target-player-number <= 8)
+(not	(stance-toward target-player ally))
+	(player-in-game target-player)
+=>
+	(chat-to-player my-player-number "Debugging focus player. 3.14")
+	(up-modify-goal temporary-goal s:= sn-target-player-number); to prevent further bugs
+	(up-modify-sn sn-focus-player-number s:= sn-target-player-number)); should be an enemy
+
+
+
+
+
+
+
+(defrule; 212
+(or	(building-type-count-total gate-class >= 2)
+	(building-type-count-total stone-wall-line >= 5))
+(or	(wall-completed-percentage 2 >= 100)
+	(wall-completed-percentage 1 >= 100))
+=>
+	(up-jump-rule 14))
+(defrule
+(or	(up-timer-status unit-control-flare-timer2 == timer-running); 222
+(or	(up-timer-status patrol-timer == timer-running)
+(or	(and	(goal attacking no)
+	(enemy-buildings-in-town); (up-compare-goal targetdistance s:< sn-maximum-town-size)
+)
+	(and	(population < del-civ-pop)
+		(and	(military-population < 10); 14
+			(or	(strategic-number sn-military-superiority <= -3)
+				(military-population < 5))))))); 7
+=>
+	(up-jump-rule 13))
+(defrule
+(or	(up-compare-goal map != land)
+(or	(and	(up-compare-goal targetdistance <= 44)
+		(and	(military-population <= 40)
+			(and	(up-projectile-detected projectile-fortification < 20000)
+				(and	(unit-type-count battering-ram-line < 1)
+					(unit-type-count bombard-cannon < 1)))))
+(or	(up-timer-status resetnow == timer-running)
+;(or	(goal attacking yes)
+	(up-compare-goal siegeretreat >= 1))));)
+=>
+	(up-jump-rule 12))
+(defrule
+	(true)
+=>
+	(up-modify-goal temporary-goal s:= sn-focus-player-number)
+	(set-goal temporary-goal2 0)
+	(set-goal temporary-goal3 0)
+	(set-goal temporary-goal4 0)
+	(set-goal temporary-goal5 0)
+	(set-goal temporary-goal6 0)
+	(set-goal temporary-goal7 0)
+	(up-modify-goal temporary-goal8 g:= targetdistance)
+	(up-modify-goal temporary-goal8 c:- 6)
+	(up-modify-goal temporary-goal8 c:max 40)
+	(up-modify-goal temporary-goal8 c:min 42); patrolhelp hmm
+	(set-strategic-number sn-focus-player-number 1)
+	(up-full-reset-search))
+(defrule; end neg jump
+(not	(stance-toward focus-player ally))
+	(player-in-game focus-player)
+	(player-valid focus-player)
+=>
+;	(up-full-reset-search)
+	(up-set-target-point position-self-x)
+	(up-modify-goal temporary-goal3 s:= sn-maximum-town-size)
+	(up-modify-goal temporary-goal3 c:+ 10); 8
+	(up-modify-goal temporary-goal3 c:max 30); 26
+	(up-modify-goal temporary-goal3 g:min temporary-goal8); 40
+	(up-filter-distance c: -1 g: temporary-goal3)
+	(up-filter-include -1 -1 -1 on-mainland)
+	(up-filter-exclude -1 -1 -1 warship-class)
+	(up-find-remote c: all-units-class c: 40)
+	(up-get-search-state local-total))
+(defrule
+	(up-compare-goal remote-last > 1); not just a scout
+(not	(stance-toward focus-player ally))
+	(player-in-game focus-player)
+	(player-valid focus-player)
+=>
+	(up-modify-goal temporary-goal5 c:+ 1)
+	(up-get-focus-fact military-population 0 temporary-goal7)
+	(up-get-focus-fact unit-type-count feudal-battering-ram temporary-goal9)
+	(up-modify-goal temporary-goal9 c:max 0)
+	(up-get-focus-fact unit-type-count battering-ram-line temporary-goal10)
+	(up-modify-goal temporary-goal10 c:max 0)
+	(up-modify-goal temporary-goal9 g:+ temporary-goal10)
+	(up-modify-goal temporary-goal7 g:- temporary-goal9)
+	(up-modify-goal temporary-goal7 c:max 0))
+(defrule
+	(up-compare-goal temporary-goal7 >= 1)
+=>
+;	(up-modify-goal temporary-goal4 g:+ focus-mpop)
+	(up-modify-goal temporary-goal7 c:- 2); placeholder
+	(up-modify-goal temporary-goal7 c:max 0))
+(defrule
+	(up-compare-goal temporary-goal7 >= 1)
+(or	(and	(up-compare-goal armytech >= imperial)
+		(players-current-age focus-player <= castle-age))
+	(and	(up-compare-goal armytech >= castlea)
+		(players-current-age focus-player <= feudal-age)))
+=>
+	(up-modify-goal temporary-goal7 c:* 2)
+	(up-modify-goal temporary-goal7 c:/ 3))
+(defrule
+	(up-compare-goal temporary-goal7 >= 1)
+(or	(and	(up-compare-goal armytech <= castlea)
+		(players-current-age focus-player >= imperial-age))
+	(and	(up-compare-goal armytech <= feudal)
+		(players-current-age focus-player >= castle-age)))
+=>
+	(up-modify-goal temporary-goal7 c:* 6)
+	(up-modify-goal temporary-goal7 c:/ 5))
+(defrule
+	(up-compare-goal temporary-goal7 >= 1)
+=>
+	(up-modify-goal temporary-goal2 g:- temporary-goal7))
+(defrule
+;	(up-compare-goal remote-last < 5)
+	(strategic-number sn-focus-player-number < 8)
+=>
+	(set-goal temporary-goal7 0)
+	(up-modify-sn sn-focus-player-number c:+ 1)
+	(up-jump-rule -7)); 6
+(defrule
+	(strategic-number sn-focus-player-number >= 8); end of search
+	(up-compare-goal temporary-goal5 >= 1)
+=>
+	(up-modify-goal temporary-goal6 g:= my-mpop)
+	(up-modify-goal temporary-goal6 c:* 6); 8
+	(up-modify-goal temporary-goal6 c:/ 5); 7
+	(up-modify-goal temporary-goal2 g:+ temporary-goal6)
+;	(up-modify-goal temporary-goal2 g:+ temporary-goal4); allied military pop
+	(up-modify-goal temporary-goal2 c:+ 2))
+(defrule
+	(strategic-number sn-focus-player-number >= 8); end of search
+	(up-compare-goal temporary-goal5 >= 1)
+(or	(up-compare-goal temporary-goal2 >= 0)
+	(population >= max-civ-pop)); del-civ-pop
+=>
+	(up-reset-filters)
+	(up-filter-include cmdid-military -1 -1 on-mainland)
+	(up-filter-exclude -1 actionid-attack orderid-explore warship-class); 4:-1
+	(up-find-local c: all-units-class c: 240)
+	(up-filter-exclude -1 actionid-convert orderid-relic -1)
+	(up-find-local c: monastery-class c: 240)
+;	(up-remove-objects search-local object-data-class == packed-trebuchet-class)
+;	(up-remove-objects search-local object-data-class == unpacked-trebuchet-class)
+	(up-remove-objects search-local object-data-group-flag >= 0)
+	(set-goal temporary-goal10 444722))
+(defrule
+	(goal temporary-goal10 444722)
+	(up-set-target-object search-local c: 0)
+	(up-set-target-object search-remote c: 0)
+=>
+	(chat-to-player my-player-number "Actively defending.")
+	(set-goal gatherinside no)
+	(set-goal patroldefense yes)
+	(up-target-objects 0 action-patrol -1 -1)
+	(set-goal patrolhelp no)
+	(enable-timer patrol-timer 6))
+(defrule
+	(true)
+=>
+	(up-modify-sn sn-focus-player-number g:= temporary-goal)); end jump
+
+
+(defrule
+	(goal attacking yes)
+	(goal patroldefense yes)
+	(timer-triggered patrol-timer) ; ; ;
+;	(timer-triggered fivesec)
+=>
+	(up-full-reset-search)
+	(up-filter-include cmdid-military -1 -1 -1)
+	(up-filter-exclude -1 -1 orderid-explore -1)
+	(up-find-local c: all-units-class c: 240)
+	(up-filter-exclude -1 -1 orderid-relic -1)
+	(up-find-local c: monastery-class c: 240)
+	(up-set-target-point position-self-x)
+	(up-target-point 0 action-stop -1 -1)
+;	(chat-to-player my-player-number "Stopping patrol-defense.")
+	(disable-timer patrol-timer)
+	(set-goal patroldefense no))
+(defrule
+	(goal patroldefense yes)
+	(timer-triggered patrol-timer)
+;	(timer-triggered fivesec)
+=>
+	(up-full-reset-search)
+	(up-filter-include cmdid-military -1 -1 -1)
+	(up-filter-exclude -1 -1 orderid-explore -1)
+	(up-find-local c: all-units-class c: 240)
+	(up-filter-exclude -1 -1 orderid-relic -1)
+	(up-find-local c: monastery-class c: 240)
+	(up-set-target-point position-self-x)
+	(up-target-point 0 action-stop -1 -1)
+;	(chat-to-player my-player-number "Stopping patrol-defense.2")
+	(disable-timer patrol-timer)
+	(set-goal patroldefense no)
+	(up-retreat-now))
+
+(defrule ; debug rule
+(or	(strategic-number sn-focus-player-number >= 9)
+(or	(strategic-number sn-focus-player-number <= 0)
+	(stance-toward focus-player ally)))
+	(strategic-number sn-target-player-number >= 1)
+	(strategic-number sn-target-player-number <= 8)
+(not	(stance-toward target-player ally))
+	(player-in-game target-player)
+=>
+	(chat-to-player my-player-number "Debugging focus player. 3,3")
+	(up-modify-goal temporary-goal s:= sn-target-player-number); to prevent further bugs
+	(up-modify-sn sn-focus-player-number s:= sn-target-player-number)); should be an enemy
+
+
+
+
+
+
+
+
+
+(defrule; 222
+(or	(up-timer-status unit-control-flare-timer2 == timer-running); 222
+(or	(up-timer-status patrol-timer == timer-running)
+(or	(up-compare-goal map != land)
+(or	(and	(goal attacking no)
+	(enemy-buildings-in-town); (up-compare-goal targetdistance s:< sn-maximum-town-size)
+)
+;(or	(up-enemy-units-in-town >= 3)
+(or	(up-compare-goal siegeretreat >= 1)
+(or	(goal underattack yes); test
+	(goal retreat no)))))));)
+=>
+	(up-jump-rule 18))
+(defrule
+(or	(up-timer-status resetnow == timer-running)
+(or	(players-building-type-count every-ally town-center <= 0)
+(or	(up-compare-goal my-flank <= 0)
+(or	(goal patroldefense yes)
+	(and	(population < del-civ-pop)
+		(and	(military-population < 12); 14
+			(or	(strategic-number sn-military-superiority <= -3)
+				(military-population < 6)))))))); 7
+=>
+	(up-jump-rule 17))
+(defrule
+(or	(and	(goal attacking yes)
+		(and	(up-compare-goal gl-threat-time < 15000)
+			(up-compare-goal attackStart != yes)))
+	(and	(military-population <= 40)
+		(and	(up-projectile-detected projectile-fortification < 30000)
+			(and	(unit-type-count battering-ram-line < 1)
+				(unit-type-count bombard-cannon < 1)))))
+=>
+	(up-jump-rule 16))
+(defrule
+	(true)
+=>
+	(up-modify-goal temporary-goal s:= sn-focus-player-number)
+	(up-modify-sn sn-focus-player-number g:= my-flank)
+	(set-goal temporary-goal8 0))
+(defrule; neg jump 2nd neighbor
+	(true)
+=>
+	(set-goal temporary-goal2 0)
+	(set-goal temporary-goal3 0)
+	(set-goal temporary-goal4 0)
+	(set-goal temporary-goal5 0)
+	(set-goal temporary-goal6 0)
+	(set-goal temporary-goal7 0)
+	(up-full-reset-search)
+	(up-find-remote c: town-center c: 1))
+(defrule
+	(player-human focus-player)
+=>
+	(up-get-focus-fact military-population 0 temporary-goal4)
+	(up-modify-goal temporary-goal4 c:/ 4)
+	(up-modify-goal temporary-goal4 c:max 2)
+	(up-modify-goal temporary-goal4 c:min 8))
+(defrule
+	(up-set-target-object search-remote c: 0)
+=>
+	(up-get-point position-object temporary-point-x)
+	(up-set-target-point temporary-point-x)
+	(up-get-focus-fact military-population 0 temporary-goal6)
+	(up-modify-goal temporary-goal4 g:+ temporary-goal6)
+	(up-get-point-distance position-self-x temporary-point-x temporary-goal6)
+	(set-strategic-number sn-focus-player-number 1)
+	(up-full-reset-search)
+;	(up-jump-rule 1)
+)
+(defrule
+(or	(up-compare-goal temporary-goal6 <= 0);(not	(up-set-target-object search-remote c: 0))
+	(up-compare-goal temporary-goal6 >= 120))
+=>
+	(up-modify-sn sn-focus-player-number g:= temporary-goal)
+	(up-full-reset-search)
+	(up-jump-rule 9))
+(defrule; end neg jump
+(not	(stance-toward focus-player ally))
+	(player-in-game focus-player)
+	(player-valid focus-player)
+=>
+;	(up-full-reset-search)
+	(up-set-target-point temporary-point-x)
+	(up-modify-goal temporary-goal3 s:= sn-maximum-town-size); hopefully similar
+	(up-modify-goal temporary-goal3 c:+ 2); 30
+	(up-modify-goal temporary-goal3 c:max 30); 28
+	(up-modify-goal temporary-goal3 c:min 40); test
+	(up-filter-distance c: -1 g: temporary-goal3)
+	(up-filter-include -1 -1 -1 on-mainland)
+	(up-filter-exclude -1 -1 -1 warship-class)
+	(up-find-remote c: all-units-class c: 40)
+	(up-get-search-state local-total))
+(defrule
+	(up-compare-goal remote-last > 1); not just a scout
+(not	(stance-toward focus-player ally))
+	(player-in-game focus-player)
+	(player-valid focus-player)
+=>
+	(up-modify-goal temporary-goal5 c:+ 1)
+	(up-get-focus-fact military-population 0 temporary-goal7)
+	(up-get-focus-fact unit-type-count feudal-battering-ram temporary-goal9)
+	(up-modify-goal temporary-goal9 c:max 0)
+	(up-get-focus-fact unit-type-count battering-ram-line temporary-goal10)
+	(up-modify-goal temporary-goal10 c:max 0)
+	(up-modify-goal temporary-goal9 g:+ temporary-goal10)
+	(up-modify-goal temporary-goal7 g:- temporary-goal9)
+	(up-modify-goal temporary-goal7 c:max 0))
+(defrule
+	(up-compare-goal temporary-goal7 >= 1)
+(or	(and	(up-compare-goal armytech >= imperial)
+		(players-current-age focus-player <= castle-age))
+	(and	(up-compare-goal armytech >= castlea)
+		(players-current-age focus-player <= feudal-age)))
+=>
+	(up-modify-goal temporary-goal7 c:* 2)
+	(up-modify-goal temporary-goal7 c:/ 3))
+(defrule
+	(up-compare-goal temporary-goal7 >= 1)
+(or	(and	(up-compare-goal armytech <= castlea)
+		(players-current-age focus-player >= imperial-age))
+	(and	(up-compare-goal armytech <= feudal)
+		(players-current-age focus-player >= castle-age)))
+=>
+	(up-modify-goal temporary-goal7 c:* 6)
+	(up-modify-goal temporary-goal7 c:/ 5))
+(defrule
+	(up-compare-goal temporary-goal7 >= 1)
+=>
+	(up-modify-goal temporary-goal2 g:- temporary-goal7))
+(defrule
+;	(up-compare-goal remote-last < 5)
+	(strategic-number sn-focus-player-number < 8)
+=>
+	(set-goal temporary-goal7 0)
+	(up-modify-sn sn-focus-player-number c:+ 1)
+	(up-jump-rule -6)); 5
+(defrule
+	(strategic-number sn-focus-player-number >= 8); end of search
+	(up-compare-goal temporary-goal5 >= 1)
+=>
+	(up-modify-goal temporary-goal2 g:+ temporary-goal4); allied military pop
+	(up-modify-goal temporary-goal2 g:+ my-mpop)
+	(up-modify-goal temporary-goal2 c:+ 2))
+(defrule
+	(strategic-number sn-focus-player-number >= 8); end of search
+	(up-compare-goal temporary-goal5 >= 1)
+(or	(up-compare-goal temporary-goal2 >= 0)
+	(population >= max-civ-pop)); del-civ-pop
+=>
+	(up-reset-filters); else it still searches for units in the ally's town
+	(up-filter-include cmdid-military -1 -1 on-mainland)
+	(up-filter-exclude -1 actionid-attack orderid-explore warship-class); 4:-1
+	(up-find-local c: all-units-class c: 240)
+	(up-filter-exclude -1 actionid-convert orderid-relic -1)
+	(up-find-local c: monastery-class c: 240)
+;	(up-remove-objects search-local object-data-class == packed-trebuchet-class)
+;	(up-remove-objects search-local object-data-class == unpacked-trebuchet-class)
+	(up-remove-objects search-local object-data-group-flag >= 0)
+	(set-goal temporary-goal10 444723))
+(defrule
+	(goal temporary-goal10 444723)
+	(up-set-target-object search-local c: 0)
+	(up-set-target-object search-remote c: 0)
+=>
+	(chat-to-player my-player-number "Helping ally.")
+	(set-goal gatherinside no)
+	(set-goal patrolhelp yes)
+	(up-target-objects 0 action-patrol -1 -1)
+	(enable-timer patrol-timer 6))
+(defrule
+	(up-timer-status patrol-timer != timer-running)
+	(up-compare-goal temporary-goal8 <= 0)
+	(up-compare-goal my-flank2 <= 8)
+	(up-compare-goal my-flank2 >= 1)
+=>
+	(set-goal temporary-goal8 1)
+	(up-modify-sn sn-focus-player-number g:= my-flank2)
+	(up-jump-rule -14))
+(defrule
+	(true)
+=>
+	(up-modify-sn sn-focus-player-number g:= temporary-goal)); end jump
+
+
+(defrule
+	(goal attacking yes)
+	(goal patrolhelp yes)
+	(timer-triggered patrol-timer) ; ; ;
+;	(timer-triggered fivesec)
+=>
+	(up-full-reset-search)
+	(up-filter-include cmdid-military -1 -1 -1)
+	(up-filter-exclude -1 -1 orderid-explore -1)
+	(up-find-local c: all-units-class c: 240)
+	(up-filter-exclude -1 -1 orderid-relic -1)
+	(up-find-local c: monastery-class c: 240)
+	(up-set-target-point position-self-x)
+	(up-target-point 0 action-stop -1 -1)
+;	(chat-to-player my-player-number "Stopping patrol-help.")
+	(disable-timer patrol-timer)
+	(set-goal patrolhelp no))
+(defrule
+	(goal patrolhelp yes)
+	(timer-triggered patrol-timer)
+;	(timer-triggered fivesec)
+=>
+	(up-full-reset-search)
+	(up-filter-include cmdid-military -1 -1 -1)
+	(up-filter-exclude -1 -1 orderid-explore -1)
+	(up-find-local c: all-units-class c: 240)
+	(up-filter-exclude -1 -1 orderid-relic -1)
+	(up-find-local c: monastery-class c: 240)
+	(up-set-target-point position-self-x)
+	(up-target-point 0 action-stop -1 -1)
+;	(chat-to-player my-player-number "Stopping patrol-help.2")
+	(disable-timer patrol-timer)
+	(set-goal patrolhelp no)
+	(up-retreat-now))
+
+
+(defrule
+	(strategic-number sn-focus-player-number s:!= sn-target-player-number)
+	(goal retargetenemy 4)
+=>
+	(chat-to-player my-player-number "Debugging defense+help focus-player.2")
+	(up-modify-sn sn-focus-player-number s:= sn-target-player-number))
+
+(defrule ; debug rule
+(or	(strategic-number sn-focus-player-number >= 9)
+(or	(strategic-number sn-focus-player-number <= 0)
+	(stance-toward focus-player ally)))
+	(strategic-number sn-target-player-number >= 1)
+	(strategic-number sn-target-player-number <= 8)
+(not	(stance-toward target-player ally))
+	(player-in-game target-player)
+=>
+;(up-chat-data-to-player my-player-number "sn-focus-player-number: %d" s: sn-focus-player-number)
+;(up-chat-data-to-player my-player-number "sn-target-player-number: %d" s: sn-target-player-number)
+	(up-modify-goal temporary-goal s:= sn-target-player-number); to prevent further bugs
+	(up-modify-sn sn-focus-player-number s:= sn-target-player-number); should be an enemy
+	(chat-to-player my-player-number "Debugging focus player. 3,5"))
+
+
+(defrule
+(or	(up-compare-const diff-fp != 1)
+(or	(up-timer-status embassy == timer-running)
+(or	(building-type-count market <= 0)
+(or	(players-building-type-count focus-player market >= 1)
+(or	(players-building-type-count every-ally market <= 0)
+(or	(player-in-game any-ally)
+	(unit-type-count-total trade-cart <= 0)))))))
+=>
+	(up-jump-rule 3))
+(defrule
+	(true)
+=>
+	(up-full-reset-search)
+	(up-get-point position-focus temporary-point-x)
+	(up-set-target-point temporary-point-x)
+	(up-find-remote c: market c: 8)
+	(up-clean-search search-remote object-data-distance search-order-desc))
+(defrule
+	(up-set-target-object search-remote c: 0)
+=>
+	(up-get-object-data object-data-id temporary-goal2)
+	(set-goal temporary-goal 240)
+	(up-modify-goal temporary-goal g:min tradeunits)
+	(up-find-local c: trade-cart g: temporary-goal)
+	(up-remove-objects search-local object-data-carry >= 1)
+	(up-remove-objects search-local object-data-target-id g:== temporary-goal2))
+(defrule
+	(up-set-target-object search-local c: 0)
+	(up-set-target-object search-remote c: 0)
+=>
+	(up-chat-data-to-self "Trading with enemy market: %d" s: sn-focus-player-number)
+	(up-target-objects 1 action-default -1 -1)); end jump
+
+
+(defrule
+(or	(up-compare-const diff-fp != 1)
+(or	(up-timer-status fivesec == timer-running)
+(or	(building-type-count market <= 0)
+(or	(players-building-type-count every-ally market <= 0)
+	(unit-type-count-total trade-cart <= 0)))))
+=>
+	(up-jump-rule 24))
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-preferred-trade-distance preftradedist)
+	(set-goal temporary-goal2 0)
+	(set-goal temporary-goal3 0)
+	(set-goal temporary-goal4 0)
+	(set-goal temporary-goal5 preftradedist)
+	(set-goal temporary-goal6 0)
+	(set-goal temporary-goal7 preftradedist)
+	(set-goal temporary-goal8 0)
+	(set-goal temporary-goal9 preftradedist)
+	(set-goal departure-market -1)
+	(set-goal destination-market -1))
+(defrule
+(or	(unit-type-count-total 178 >= 4); (empty)
+(or	(unit-type-count-total 205 >= 4); (full)
+	(and	(unit-type-count-total 178 >= 2)
+		(unit-type-count-total 205 >= 2))))
+	(strategic-number sn-preferred-trade-distance >= preftradedist)
+=>
+	(up-modify-sn sn-preferred-trade-distance c:/ 2)
+	(up-modify-sn sn-preferred-trade-distance c:min 120)
+	(up-modify-sn sn-preferred-trade-distance c:max 60))
+(defrule
+	(unit-type-count-total 178 <= 0)
+	(unit-type-count-total 205 <= 0)
+=>
+	(up-jump-rule 21))
+(defrule
+	(true)
+=>
+	(up-modify-goal temporary-goal s:= sn-focus-player-number)
+	(set-strategic-number sn-focus-player-number 1)
+	(up-modify-goal temporary-goal9 c:/ 4)
+	(up-modify-goal temporary-goal9 c:max 30)
+	(up-modify-goal temporary-goal9 c:min 60)
+	(up-full-reset-search)
+	(up-find-local c: market c: 16)
+	(up-set-target-object search-local c: 0)
+	(up-get-point position-object point-x)
+	(up-get-point position-center temporary-point-x))
+(defrule; end neg jump
+	(strategic-number sn-focus-player-number != my-player-number)
+	(stance-toward focus-player ally)
+	(player-valid focus-player)
+=>
+	(up-find-remote c: market c: 16)
+	(up-set-target-object search-remote c: 0)
+	(up-get-point position-object saved-point-x))
+(defrule; end neg jump
+	(strategic-number sn-focus-player-number != my-player-number)
+	(stance-toward focus-player ally)
+	(player-valid focus-player)
+	(up-set-target-object search-local g: temporary-goal2)
+	(up-set-target-object search-remote g: temporary-goal3)
+=>
+	(up-get-point-distance point-x saved-point-x temporary-goal5)
+	(up-modify-goal temporary-goal5 c:- preftradedist)
+	(up-modify-goal temporary-goal6 g:= temporary-goal5)
+	(up-modify-goal temporary-goal6 c:* -1)
+	(up-modify-goal temporary-goal5 g:max temporary-goal6))
+(defrule
+	(up-compare-goal temporary-goal5 g:< temporary-goal7)
+	(up-point-distance point-x saved-point-x g:>= temporary-goal9)
+=>
+	(up-modify-goal temporary-goal8 s:= sn-focus-player-number)
+	(set-strategic-number sn-focus-player-number 1)
+	(up-reset-search 0 0 1 1)
+	(up-reset-filters)
+	(up-filter-exclude -1 -1 -1 farm-class)
+	(up-copy-point object-point-x point-x)
+	(up-set-target-point object-point-x)
+	(up-filter-distance c: -1 c: 24)
+	(set-goal remote-total 0))
+(defrule; end neg jumps
+	(strategic-number sn-focus-player-number < 8)
+(or	(not	(player-valid focus-player))
+(or	(stance-toward focus-player ally)
+	(strategic-number sn-focus-player-number == my-player-number)))
+	(up-compare-goal temporary-goal5 g:< temporary-goal7)
+	(up-point-distance point-x saved-point-x g:>= temporary-goal9)
+=>
+	(up-modify-sn sn-focus-player-number c:+ 1)
+	(up-jump-rule -1))
+(defrule; end neg jump
+	(up-compare-goal temporary-goal5 g:< temporary-goal7)
+	(game-time g:<= trade-safety-time)
+	(up-point-distance object-point-x trade-safety-point-x < 24)
+=>
+	(set-goal remote-total 5)
+	(up-get-fact game-time 0 trade-safety-time)
+	(up-jump-rule 4))
+(defrule; end neg jump
+	(up-compare-goal temporary-goal5 g:< temporary-goal7)
+(not	(stance-toward focus-player ally))
+	(strategic-number sn-focus-player-number != my-player-number)
+	(player-valid focus-player)
+(or	(up-find-remote c: castle c: 1)
+(or	(up-find-remote c: krepost c: 1)
+(or	(up-find-remote c: bombard-tower c: 1)
+	(up-find-remote c: watch-tower c: 1))))
+=>
+	(set-goal remote-total 5)
+	(up-get-fact game-time 0 trade-safety-time)
+	(up-jump-rule 3))
+(defrule
+	(up-compare-goal remote-total < 5)
+	(up-compare-goal temporary-goal5 g:< temporary-goal7)
+	(up-point-distance point-x saved-point-x g:>= temporary-goal9)
+	(strategic-number sn-focus-player-number != my-player-number)
+(not	(stance-toward focus-player ally))
+	(strategic-number sn-focus-player-number != my-player-number)
+	(player-valid focus-player)
+	(up-point-distance object-point-x saved-point-x >= 10)
+	(up-point-distance object-point-x temporary-point-x >= marketdelradius)
+=>
+	(up-set-target-point object-point-x)
+	(up-filter-distance c: -1 c: 24)
+	(up-find-remote c: all-units-class c: 40)
+;	(up-remove-objects search-remote object-data-class == building-class)
+;	(up-remove-objects search-remote object-data-class == wall-class)
+;	(up-remove-objects search-remote object-data-class == gate-class)
+	(up-lerp-tiles object-point-x saved-point-x c: 10)
+	(up-get-search-state local-total)
+	(up-jump-rule -3))
+(defrule
+	(strategic-number sn-focus-player-number < 8)
+	(up-compare-goal remote-total < 5)
+	(up-compare-goal temporary-goal5 g:< temporary-goal7)
+	(up-point-distance point-x saved-point-x g:>= temporary-goal9)
+	(up-point-distance object-point-x saved-point-x <= 9)
+	(up-point-distance object-point-x temporary-point-x >= marketdelradius)
+=>
+	(up-copy-point object-point-x point-x)
+	(up-modify-sn sn-focus-player-number c:+ 1)
+	(up-jump-rule -5))
+(defrule
+	(up-compare-goal remote-total >= 5)
+	(game-time g:>= trade-safety-time)
+	(up-compare-goal temporary-goal5 g:< temporary-goal7)
+	(up-point-distance point-x saved-point-x g:>= temporary-goal9)
+=>
+	(up-set-target-object search-remote c: 0)
+	(up-get-point position-object trade-safety-point-x)
+	(up-get-fact game-time 0 trade-safety-time)
+	(up-modify-goal trade-safety-time c:+ 70)); end jump
+(defrule
+	(up-compare-goal temporary-goal5 g:< temporary-goal7)
+	(up-point-distance point-x saved-point-x g:>= temporary-goal9)
+=>
+	(up-modify-sn sn-focus-player-number g:= temporary-goal8))
+(defrule
+	(strategic-number sn-focus-player-number != my-player-number)
+	(stance-toward focus-player ally)
+	(player-valid focus-player)
+=>
+	(up-reset-search 0 0 1 1)
+	(up-reset-filters)
+	(up-find-remote c: market c: 16))
+(defrule
+	(up-compare-goal remote-total < 5)
+	(up-compare-goal temporary-goal5 g:< temporary-goal7)
+	(up-point-distance point-x saved-point-x g:>= temporary-goal9)
+	(up-point-distance object-point-x saved-point-x <= 9)
+	(up-point-distance object-point-x temporary-point-x >= marketdelradius)
+=>
+	(up-modify-goal temporary-goal7 g:= temporary-goal5)
+	(up-set-target-object search-remote g: temporary-goal3)
+	(up-get-object-data object-data-id destination-market)
+	(up-set-target-object search-local g: temporary-goal2)
+	(up-get-object-data object-data-id departure-market)
+	(up-get-point-distance point-x saved-point-x temporary-goal4)
+	(up-modify-sn sn-preferred-trade-distance g:= temporary-goal4)
+	(up-modify-sn sn-preferred-trade-distance c:+ 1)
+	(up-modify-sn sn-preferred-trade-distance g:max temporary-goal9))
+(defrule
+	(stance-toward focus-player ally)
+	(strategic-number sn-focus-player-number != my-player-number)
+	(up-set-target-object search-local g: temporary-goal2)
+	(up-set-target-object search-remote g: temporary-goal3)
+=>
+	(up-modify-goal temporary-goal3 c:+ 1)
+	(up-set-target-object search-remote g: temporary-goal3)
+	(up-get-point position-object saved-point-x)
+	(set-goal temporary-goal5 preftradedist)
+	(up-jump-rule -12))
+(defrule
+	(strategic-number sn-focus-player-number != my-player-number)
+	(stance-toward focus-player ally)
+	(player-valid focus-player)
+	(up-set-target-object search-local g: temporary-goal2)
+(not	(up-set-target-object search-remote g: temporary-goal3))
+=>
+	(up-modify-goal temporary-goal2 c:+ 1)
+	(set-goal temporary-goal3 0)
+	(up-set-target-object search-local g: temporary-goal2)
+	(up-get-point position-object point-x)
+	(up-set-target-object search-remote g: temporary-goal3)
+	(up-get-point position-object saved-point-x)
+	(set-goal temporary-goal5 preftradedist)
+	(up-jump-rule -13))
+(defrule
+	(strategic-number sn-focus-player-number < 8)
+=>
+	(up-modify-sn sn-focus-player-number c:+ 1)
+	(up-reset-search 0 0 1 1)
+	(up-reset-filters)
+	(set-goal temporary-goal2 0)
+	(set-goal temporary-goal3 0)
+	(set-goal temporary-goal5 preftradedist)
+	(up-set-target-object search-local g: temporary-goal2)
+	(up-get-point position-object point-x)
+	(up-jump-rule -15))
+(defrule
+	(up-compare-goal temporary-goal7 < preftradedist)
+=>
+	(up-full-reset-search)
+	(set-goal temporary-goal2 240)
+	(up-modify-goal temporary-goal2 g:min tradeunits)
+	(up-find-local c: trade-cart g: temporary-goal2)
+	(up-remove-objects search-local object-data-carry >= 1)
+	(up-remove-objects search-local object-data-target-id g:== destination-market))
+(defrule
+	(up-compare-goal temporary-goal7 < preftradedist)
+	(up-set-target-object search-local c: 0)
+	(up-set-target-by-id g: destination-market)
+	(up-object-data object-data-type == market)
+=>
+	(up-chat-data-to-self "Trading with secure market: %d" s: sn-preferred-trade-distance)
+	(up-target-objects 1 action-default -1 -1))
+(defrule
+	(up-compare-goal temporary-goal7 < preftradedist)
+=>
+	(up-full-reset-search)
+	(up-find-local c: trade-cart g: temporary-goal2)
+	(up-remove-objects search-local object-data-carry <= 0)
+	(up-remove-objects search-local object-data-target-id g:== departure-market))
+(defrule
+	(up-compare-goal temporary-goal7 < preftradedist)
+	(up-set-target-object search-local c: 0)
+	(up-set-target-by-id g: departure-market)
+	(up-object-data object-data-type == market)
+=>
+;	(chat-local-to-self "Loading off cargo at secure market.")
+	(up-target-objects 1 action-default -1 -1))
+(defrule
+	(true)
+=>
+	(up-modify-sn sn-focus-player-number g:= temporary-goal)); end jump
+
+
+#load-if-defined REAL-WORLD-WORLD-MAP
+(defrule
+	(game-time >= 2)
+	(unit-type-count transport-ship >= 1)
+	(unit-type-count villager >= 1)
+	(building-type-count town-center <= 0)
+=>
+	(up-garrison transport-ship c: villager-class)
+	(up-garrison transport-ship c: scout-cavalry-class)
+	(up-garrison transport-ship c: infantry-class)
+	(up-garrison transport-ship c: king-class)
+	(set-goal inseln yes)
+	(set-goal migration-state 1)
+	(disable-self))
+#end-if
+
+(defrule
+	(up-compare-const scenario-game == 1)
+	(building-type-count-total town-center <= 1)
+=>
+	(up-jump-rule 2))
+(defrule
+(or	(up-compare-goal migration-state != 1)
+(or	(building-available town-center)
+(or	(up-research-status c: castle-age >= research-pending)
+(or	(up-research-status c: feudal-age == research-pending); jic
+(or	(up-research-status c: ri-loom == research-pending)
+(or	(up-pending-objects c: villager >= 1)
+(or	(unit-type-count villager <= 0); jic
+	(unit-type-count transport-ship <= 0))))))))
+=>
+	(up-jump-rule 1))
+(defrule
+	(building-type-count town-center >= 1)
+	(wood-amount >= 100); 275
+(or	(up-idle-unit-count idle-type-villager g:>= villagercount)
+	(and	(game-time >= 90)
+		(and	(housing-headroom <= 0)
+			(population-headroom >= 1))))
+	(up-compare-const sd-game != 1)
+=>
+	(up-full-reset-search)
+	(up-find-local c: town-center c: 16)
+	(up-remove-objects search-local object-data-map-zone-id g:!= starting-zone)
+	(up-remove-objects search-local object-data-map-zone-id g:== migration-zone)
+	(up-target-point 0 action-delete -1 -1)
+	(disable-self));; end mini jump
+(defrule
+(or	(up-compare-goal migration-state != 1)
+(or	(and	(not	(building-available town-center))
+		(up-research-status c: castle-age <= research-available))
+	(up-timer-status threesec == timer-running)))
+=>
+	(up-jump-rule 40))
+(defrule
+	(true);	(soldier-count >= 1)
+=>
+	(up-full-reset-search)
+	(up-filter-include cmdid-military actionid-enter -1 -1)
+	(up-find-local c: all-units-class c: 240)
+	(up-target-point 0 action-stop -1 -1)
+	(disable-self))
+(defrule
+	(true)
+=>
+	(up-modify-goal temporary-goal s:= sn-focus-player-number)
+	(set-strategic-number sn-focus-player-number my-player-number)
+	(up-get-point-zone migration-point-x migration-zone)
+;	(up-send-flare migration-point-x)
+	(set-goal temporary-goal2 0)
+	(set-goal temporary-goal3 0)
+	(set-goal temporary-goal5 0)
+	(set-goal temporary-goal6 16384)
+	(set-goal temporary-goal7 0)
+	(up-modify-goal temporary-goal8 g:= escrow-state)
+	(set-goal escrow-state with-escrow))
+(defrule
+	(building-type-count town-center >= 1)
+=>
+	(up-full-reset-search)
+	(up-find-local c: villager-class g: villagercount)
+	(up-remove-objects search-local object-data-map-zone-id g:!= starting-zone)
+	(up-remove-objects search-local object-data-map-zone-id g:== migration-zone);
+	(up-get-search-state local-total)
+	(up-modify-goal temporary-goal2 g:= local-total)
+	(up-find-local c: town-center c: 16)
+	(up-remove-objects search-local object-data-map-zone-id g:!= starting-zone)
+	(up-remove-objects search-local object-data-map-zone-id g:== migration-zone);
+	(up-get-search-state local-total)
+	(up-modify-goal temporary-goal3 g:= local-total)
+	(up-find-remote c: town-center c: 16)
+	(up-find-remote c: villager-class g: villagercount)
+	(up-remove-objects search-remote object-data-map-zone-id g:!= migration-zone))
+(defrule
+	(building-type-count town-center >= 1)
+=>
+	(up-get-search-state local-total)
+	(up-modify-goal temporary-goal4 g:= remote-total)
+;	(up-full-reset-search)
+	(up-filter-garrison c: 1 c: -1)
+	(up-find-local c: transport-ship c: maxtransports)
+	(up-get-search-state local-total)
+;	(up-chat-data-to-player my-player-number "remote-total delete: %d" g: remote-total)
+;	(up-chat-data-to-player my-player-number "local-total delete: %d" g: local-total)
+;	(up-chat-data-to-player my-player-number "temporary-goal2 delete: %d" g: temporary-goal2)
+;	(up-chat-data-to-player my-player-number "temporary-goal3 delete: %d" g: temporary-goal3)
+;	(up-chat-data-to-player my-player-number "temporary-goal4 delete: %d" g: temporary-goal4)
+;	(up-chat-data-to-player my-player-number "starting-zone delete: %d" g: starting-zone)
+;	(up-chat-data-to-player my-player-number "migration-zone delete: %d" g: migration-zone)
+)
+(defrule
+	(up-compare-goal local-total <= 0); last
+	(up-compare-goal temporary-goal2 <= 0);
+(or	(up-compare-goal temporary-goal3 <= 0);
+	(up-compare-const sd-game == 1))
+	(up-compare-goal temporary-goal4 >= 1)
+	(building-type-count town-center >= 1)
+=>
+;	(up-chat-data-to-player my-player-number "starting-zone: %d" g: starting-zone)
+;	(up-chat-data-to-player my-player-number "migration-zone: %d" g: migration-zone)
+	(set-strategic-number sn-total-number-explorers 0);
+	(set-strategic-number sn-number-explore-groups 0);
+	(up-reset-scouts);
+	(set-goal migration-state 2); 0
+	(up-chat-data-to-player my-player-number "Migration-state: %d" g: migration-state)
+	(up-jump-rule 1))
+(defrule
+	(up-compare-goal temporary-goal2 >= 1)
+	(up-compare-goal temporary-goal3 g:<= temporary-goal2)
+	(up-compare-goal temporary-goal4 >= 1)
+	(building-type-count town-center >= 1)
+	(unit-type-count-total villager >= min-number-vills)
+(or	(timer-triggered one-min); back-up
+(or	(housing-headroom <= 0); back-up
+(or	(up-compare-goal custom-civ-pop >= up-max-civ); >
+	(population >= max-civ-pop)))); >
+=>
+;	(chat-local-to-self "Migration: Deleting villager.")
+	(up-remove-objects search-local object-data-class != villager-class)
+;tf	(up-clean-search search-local object-data-action search-order-desc)
+	(up-clean-search search-local object-data-carry search-order-asc)
+	(up-remove-objects search-local object-data-index >= 1)
+	(up-target-point 0 action-delete -1 -1))
+(defrule
+	(building-type-count dock >= 1)
+=>
+	(up-full-reset-search)
+	(up-find-local c: dock c: 1)
+	(up-set-target-object search-local c: 0)
+	(up-get-point position-object point-x)
+	(up-get-point-zone point-x temporary-goal6)
+;	(up-chat-data-to-self "starting-zone: %d" g: starting-zone)
+;	(up-chat-data-to-self "temporary-goal6: %d" g: temporary-goal6)
+;	(up-chat-data-to-self "migration-zone: %d" g: migration-zone)
+)
+(defrule
+	(unit-type-count transport-ship >= 1)
+	(goal transport-state 2)
+=>
+	(up-full-reset-search)
+	(up-filter-exclude -1 actionid-move -1 -1)
+	(up-find-local c: transport-ship c: maxtransports)
+	(up-set-target-object search-local c: 0)
+	(up-get-point position-object temporary-point-x)
+	(up-lerp-tiles temporary-point-x migration-point-x c: -8)
+	(up-set-target-point temporary-point-x)
+	(up-target-point 0 action-move -1 -1)
+	(disable-self)
+	(up-jump-rule 1)); don't block vills
+(defrule
+	(unit-type-count transport-ship >= 1)
+	(goal transport-state 2)
+=>
+	(up-full-reset-search)
+	(up-filter-include -1 actionid-move -1 -1)
+	(up-filter-garrison c: -1 c: 0); 4
+	(up-find-local c: transport-ship c: maxtransports)
+	(up-get-search-state local-total)
+	(up-chat-data-to-self "Stopping transports: %d." g: local-total)
+	(up-target-point 0 action-stop -1 -1)
+	(set-goal transport-state 0))
+(defrule
+	(unit-type-count transport-ship >= 1)
+=>
+;	(up-full-reset-search)
+;	(up-filter-garrison c: 1 c: -1)
+;	(up-find-local c: transport-ship c: maxtransports)
+;	(up-set-target-object search-local c: 0)
+;	(up-get-point position-object point-x)
+;	(up-get-point-zone point-x temporary-goal8)
+;;	(up-chat-data-to-all "temporary-goal8: %d" g: temporary-goal8)
+	(up-full-reset-search)
+	(up-filter-exclude -1 actionid-unload -1 -1)
+	(up-find-local c: transport-ship c: maxtransports)
+	(up-remove-objects search-local object-data-action == actionid-move)
+	(up-get-search-state local-total)
+	(up-modify-goal temporary-goal3 g:= local-total)
+	(up-full-reset-search)
+	(up-filter-include -1 actionid-enter -1 -1)
+	(up-find-local c: villager-class g: villagercount)
+	(up-remove-objects search-local object-data-map-zone-id g:!= starting-zone)
+	(up-remove-objects search-local object-data-map-zone-id g:== migration-zone);
+	(up-get-search-state local-total)
+	(up-chat-data-to-self "local-total entering: %d" g: local-total)
+	(up-modify-goal temporary-goal2 g:= local-total))
+(defrule
+(or	(timer-triggered two-mins)
+	(and	(timer-triggered one-min)
+		(up-compare-goal temporary-goal3 >= 1)))
+	(up-compare-goal local-total >= 1)
+	(unit-type-count transport-ship >= 1)
+=>
+	(up-chat-data-to-self "Resetting %d villagers with action-enter." g: local-total)
+	(up-target-point 0 action-stop -1 -1)
+	(up-full-reset-search))
+(defrule
+	(up-compare-goal local-total <= 0)
+	(unit-type-count transport-ship >= 1)
+=>
+	(up-full-reset-search)
+	(up-find-local c: villager-class g: villagercount)
+	(up-remove-objects search-local object-data-garrisoned == 1)
+	(up-remove-objects search-local object-data-map-zone-id g:!= starting-zone)
+	(up-remove-objects search-local object-data-map-zone-id g:== migration-zone);
+	(up-filter-garrison c: -1 c: t-carry2)
+	(up-find-remote c: transport-ship c: maxtransports)
+	(up-get-search-state local-total)
+;	(up-chat-data-to-self "local-total entering: %d" g: local-total)
+;	(up-chat-data-to-self "remote-total entering: %d" g: remote-total)
+;	(up-chat-data-to-self "sn-entering: %d" s: sn-focus-player-number)
+	(up-modify-goal remote-total c:* t-carry)
+	(up-modify-goal remote-total g:- temporary-goal2)
+	(up-set-target-object search-remote c: 0)
+	(up-get-object-data object-data-garrison-count temporary-goal3)
+	(up-modify-goal remote-total g:- temporary-goal3)
+;	(up-get-search-state local-total)
+	(set-goal temporary-goal3 1))
+(defrule
+	(goal temporary-goal3 1)
+	(up-compare-goal remote-total >= 1)
+=>
+	(up-add-object-by-id search-local g: scouting-unit)
+	(up-remove-objects search-local object-data-garrisoned == 1)
+	(up-remove-objects search-local object-data-map-zone-id g:!= starting-zone)
+	(up-remove-objects search-local object-data-map-zone-id g:== migration-zone);
+	(up-get-search-state local-total))
+(defrule
+	(goal temporary-goal3 1)
+	(up-compare-goal local-total >= 1)
+	(up-compare-goal remote-total >= 1)
+=>
+	(up-get-point position-object point-x)
+	(up-set-target-point point-x)
+	(up-clean-search search-local object-data-distance search-order-asc)
+	(up-remove-objects search-local object-data-index g:>= remote-total)
+	(up-get-search-state local-total)
+	(up-chat-data-to-self "local-total enter: %d" g: local-total)
+	(up-target-objects 0 action-garrison -1 -1)
+	(set-goal transport-state 1)
+	(up-jump-rule 8))
+(defrule
+	(unit-type-count transport-ship >= 1)
+(or	(up-compare-goal local-total <= 0)
+	(up-compare-goal remote-total <= 0))
+=>
+	(up-full-reset-search)
+	(up-filter-garrison c: 1 c: -1)
+	(up-find-local c: transport-ship c: maxtransports)
+	(up-remove-objects search-local object-data-map-zone-id g:== starting-zone)
+	(up-remove-objects search-local object-data-map-zone-id g:!= migration-zone)
+	(up-get-search-state local-total)
+	(up-chat-data-to-self "local-total unload #1: %d" g: local-total)
+	(set-goal temporary-goal5 1))
+(defrule
+	(up-compare-goal temporary-goal5 <= 0)
+	(unit-type-count transport-ship >= 1); escrow everything else until we're done
+(or	(up-compare-goal local-total <= 0); save point of where villagers entered
+	(up-compare-goal remote-total <= 0)); and then unload if not moving and X tiles away
+=>
+	(up-full-reset-search)
+	(up-filter-garrison c: 1 c: -1)
+	(up-filter-exclude -1 actionid-move -1 -1)
+	(up-find-local c: transport-ship c: maxtransports)
+	(up-set-target-object search-local c: 0)
+	(up-get-point position-object point-x)
+;	(up-get-point-zone point-x temporary-goal8)
+	(up-remove-objects search-local object-data-map-zone-id g:== starting-zone)
+	(up-remove-objects search-local object-data-map-zone-id g:== temporary-goal6)
+;	(up-chat-data-to-self "starting-zone: %d" g: starting-zone)
+;	(up-chat-data-to-self "temporary-goal6: %d" g: temporary-goal6)
+;	(up-chat-data-to-self "temporary-goal8: %d" g: temporary-goal8)
+	(up-get-search-state local-total)
+	(up-chat-data-to-self "local-total unload #2: %d" g: local-total)
+	(set-goal temporary-goal5 1)); end jump
+(defrule
+	(goal temporary-goal5 1)
+	(up-compare-goal local-total >= 1)
+=>
+	(up-set-target-object search-local c: 0)
+	(up-get-point position-object point-x)
+	(up-set-target-point point-x)
+;	(up-send-flare point-x)
+	(up-lerp-tiles point-x migration-point-x c: 1)
+	(up-target-point 0 action-unload -1 -1)
+;	(up-lerp-tiles point-x migration-point-x c: 1);
+;	(up-target-point 0 action-unload -1 -1);
+	(chat-local-to-self "Ungarrison.")
+;	(up-ungarrison c: transport-ship)
+	(set-goal transport-state 2))
+(defrule
+	(up-compare-goal temporary-goal2 <= 0)
+(or	(up-compare-goal temporary-goal5 <= 0);
+	(up-compare-goal local-total <= 0))
+	(unit-type-count transport-ship >= 1)
+=>
+	(up-full-reset-search)
+	(up-filter-garrison c: 1 c: -1)
+	(up-filter-exclude -1 actionid-move -1 -1)
+	(up-find-local c: transport-ship c: maxtransports)
+	(up-remove-objects search-local object-data-map-zone-id g:== migration-zone)
+	(up-get-search-state local-total)
+	(up-chat-data-to-self "local-total move0: %d" g: local-total)
+	(set-goal temporary-goal5 25))
+(defrule
+	(goal temporary-goal5 25)
+	(up-compare-goal local-total >= 1)
+	(unit-type-count transport-ship >= 1)
+=>
+	(up-chat-data-to-self "local-total move: %d" g: local-total)
+	(up-set-target-point migration-point-x)
+;	(up-send-flare migration-point-x)
+	(up-target-point 0 action-move -1 -1)
+	(up-jump-rule 3))
+(defrule
+	(unit-type-count transport-ship >= 1)
+	(unit-type-count villager >= 1)
+	(strategic-number sn-percent-attack-soldiers <= 0)
+	(strategic-number sn-number-attack-groups <= 0)
+=>
+	(up-full-reset-search)
+	(up-filter-garrison c: 1 c: -1)
+	(up-filter-include -1 actionid-move -1 -1)
+	(up-find-local c: transport-ship c: maxtransports)
+	(up-remove-objects search-local object-data-map-zone-id g:== migration-zone)
+	(up-remove-objects search-local object-data-index >= 1)
+	(up-get-search-state local-total))
+(defrule
+	(up-compare-goal local-total >= 1)
+	(unit-type-count transport-ship >= 1)
+	(unit-type-count villager >= 1)
+	(strategic-number sn-percent-attack-soldiers <= 0)
+	(strategic-number sn-number-attack-groups <= 0)
+=>
+	(up-set-target-object search-local c: 0)
+	(up-get-object-data object-data-move-x point-x)
+	(up-get-object-data object-data-move-y point-y))
+(defrule
+	(up-point-distance point-x migration-point-x >= 1)
+	(up-compare-goal local-total >= 1)
+	(unit-type-count transport-ship >= 1)
+	(unit-type-count villager >= 1)
+	(strategic-number sn-percent-attack-soldiers <= 0)
+	(strategic-number sn-number-attack-groups <= 0)
+=>
+	(chat-local-to-self "Trying to fix transport-ship.")
+	(set-goal temporary-goal5 25)
+	(up-jump-rule -4)); end jump
+(defrule
+	(true)
+=>
+	(up-full-reset-search)
+	(up-find-remote c: lumber-camp c: 32)
+	(up-filter-status c: status-pending c: list-active)
+	(up-find-status-remote c: lumber-camp c: 32)
+	(up-remove-objects search-remote object-data-map-zone-id g:!= migration-zone)
+	(up-get-search-state local-total)
+;	(up-chat-data-to-self "remote-total7: %d" g: remote-total)
+	(up-modify-goal temporary-goal7 g:= remote-total))
+(defrule
+	(true)
+=>
+	(up-full-reset-search)
+	(up-filter-exclude -1 actionid-attack orderid-explore -1)
+	(up-find-local c: villager-class g: villagercount)
+	(up-remove-objects search-local object-data-map-zone-id g:!= migration-zone)
+	(up-remove-objects search-local object-data-map-zone-id g:== starting-zone)
+;	(up-remove-objects search-local object-data-index >= 1)
+	(up-reset-filters)
+	(up-find-remote c: town-center c: 16)
+	(up-filter-status c: status-pending c: list-active)
+	(up-find-status-remote c: town-center-foundation c: 16)
+	(up-remove-objects search-remote object-data-map-zone-id g:!= migration-zone)
+	(up-get-search-state local-total)
+;	(up-chat-data-to-self "local-total5: %d" g: local-total)
+;	(up-chat-data-to-self "remote-total5: %d" g: remote-total)
+	(up-set-target-object search-local c: 0)
+	(up-get-point position-object point-x)
+	(up-modify-goal temporary-goal5 g:= escrow-state)
+	(set-goal escrow-state with-escrow)); fb
+(defrule
+	(up-compare-goal local-total >= 1)
+	(up-compare-goal remote-total <= 0)
+(or	(up-can-build escrow-state c: town-center)
+	(and	(building-available town-center)
+		(can-afford-building town-center)))
+=>
+	(chat-to-player my-player-number "TC.3")
+	(up-copy-point building-point-x point-x)
+	(up-set-target-point building-point-x)
+;	(up-send-flare building-point-x)
+	(set-strategic-number sn-placement-zone-size 20)
+	(set-strategic-number sn-allow-adjacent-dropsites 1)
+	(set-strategic-number sn-town-center-placement lumber-camp)
+	(up-build place-point escrow-state c: town-center)
+	(up-jump-rule 3))
+(defrule
+(or	(up-pending-objects c: lumber-camp >= 1)
+	(up-pending-placement c: lumber-camp))
+=>
+	(up-jump-rule 2))
+(defrule
+	(up-compare-goal local-total >= 1)
+;(or
+	(up-compare-goal remote-total <= 0)
+;	(not	(building-available town-center)))
+	(up-compare-goal temporary-goal7 <= 0)
+;	(building-type-count-total lumber-camp <= 0)
+;	(building-type-count-total town-center <= 0)
+=>
+	(chat-to-player my-player-number "LC.3")
+	(up-add-object-cost c: lumber-camp c: 1)
+	(up-modify-flag escrow-flag2 c:+ 16777216)
+	(up-full-reset-search)
+	(up-filter-include -1 -1 -1 off-mainland)
+	(up-filter-status c: status-ready c: list-active)
+	(up-find-resource c: wood c: 240)
+;	(up-remove-objects search-remote object-data-map-zone-id g:!= migration-zone)
+;	(up-remove-objects search-remote object-data-map-zone-id g:== starting-zone)
+	(up-filter-status c: status-resource c: list-active)
+	(up-find-resource c: wood c: 240)
+	(up-remove-objects search-remote object-data-map-zone-id g:!= migration-zone)
+	(up-remove-objects search-remote object-data-map-zone-id g:== starting-zone)
+	(up-get-search-state local-total)
+	(set-goal temporary-goal3 2))
+(defrule
+	(goal temporary-goal3 2)
+	(up-compare-goal remote-total >= 2); 1
+(or	(up-point-explored migration-point-x != explored-no)
+	(up-compare-goal remote-total >= 4)); 2
+	(up-can-build escrow-state c: lumber-camp)
+=>
+	(chat-to-player my-player-number "LC.3.2")
+	(up-set-target-object search-remote c: 0)
+	(up-get-point position-object point-x)
+	(up-copy-point building-point-x point-x)
+	(up-set-target-point building-point-x)
+	(set-strategic-number sn-placement-zone-size 24)
+	(set-strategic-number sn-allow-adjacent-dropsites 1)
+	(up-build place-point escrow-state c: lumber-camp)); end jump
+(defrule
+	(true)
+=>
+	(up-modify-goal escrow-state g:= temporary-goal5)
+	(up-full-reset-search)
+	(up-filter-exclude -1 actionid-attack orderid-explore -1)
+	(up-find-local c: villager-class g: villagercount)
+	(up-remove-objects search-local object-data-map-zone-id g:== starting-zone)
+	(up-remove-objects search-local object-data-map-zone-id g:!= migration-zone)
+	(up-remove-objects search-local object-data-action == actionid-build)
+	(up-remove-objects search-local object-data-action == actionid-gather)
+;	(up-remove-objects search-local object-data-index >= 1); 1
+	(up-find-remote c: lumber-camp c: 16)
+	(up-find-remote c: town-center c: 16)
+	(up-filter-status c: status-pending c: list-active)
+	(up-find-status-remote c: lumber-camp c: 16)
+	(up-find-status-remote c: town-center-foundation c: 16)
+	(up-remove-objects search-remote object-data-map-zone-id g:== starting-zone)
+	(up-remove-objects search-remote object-data-map-zone-id g:!= migration-zone))
+(defrule
+	(true)
+=>
+	(up-get-search-state local-total)
+	(up-copy-point temporary-point-x migration-point-x))
+(defrule
+	(up-compare-goal local-total >= 1)
+	(up-compare-flag escrow-flag2 == 524288)
+	(up-compare-goal excessWood >= 1)
+	(up-compare-goal excessStone >= 1)
+=>
+	(up-remove-objects search-remote object-data-type == lumber-camp)
+	(up-get-search-state local-total))
+(defrule
+	(up-compare-goal local-total >= 1)
+	(up-compare-goal remote-total >= 1)
+=>
+	(up-full-reset-search)
+	(up-filter-include -1 actionid-move -1 -1)
+	(up-find-local c: villager-class g: villagercount)
+	(up-remove-objects search-local object-data-map-zone-id g:== starting-zone)
+	(up-remove-objects search-local object-data-map-zone-id g:!= migration-zone)
+	(up-target-point 0 action-stop -1 -1)
+	(up-jump-rule 4)
+;	(disable-self)
+)
+(defrule
+	(up-compare-goal remote-total <= 0)
+=>
+	(up-full-reset-search)
+	(up-copy-point object-point-x temporary-point-x)
+	(up-lerp-tiles object-point-x position-self-x c: tile-jump)
+	(up-get-object-data object-data-map-zone-id temporary-goal3)
+	(up-set-target-point object-point-x)
+	(up-modify-goal temporary-goal9 c:= timer-lcs)
+	(up-modify-goal temporary-goal9 c:min tile-jump)
+	(up-modify-goal temporary-goal9 c:+ 6)
+	(up-filter-exclude -1 actionid-attack orderid-explore -1)
+	(up-find-local c: villager-class g: villagercount)
+	(up-remove-objects search-local object-data-distance g:< temporary-goal9)
+	(up-remove-objects search-local object-data-map-zone-id g:== starting-zone)
+	(up-remove-objects search-local object-data-map-zone-id g:!= migration-zone)
+	(up-remove-objects search-local object-data-action == actionid-move)
+	(up-remove-objects search-local object-data-action == actionid-build))
+(defrule
+	(up-compare-goal remote-total <= 0)
+=>
+	(up-remove-objects search-local object-data-action == actionid-gather)
+	(up-remove-objects search-local object-data-action == actionid-enter)
+	(up-get-search-state local-total))
+(defrule
+	(up-compare-goal remote-total <= 0)
+	(up-compare-goal migration-zone g:!= temporary-goal3)
+=>
+;	(up-remove-objects search-local object-data-map-zone-id g:!= temporary-goal3)
+	(up-copy-point object-point-x temporary-point-x))
+(defrule
+	(up-compare-goal local-total >= 1)
+	(up-compare-goal remote-total <= 0)
+=>
+	(set-goal nomad yes)
+	(set-goal landnomad yes)
+	(chat-local-to-self "Moving villagers away from shore.")
+	(up-target-point 0 action-move -1 -1)); end jump
+(defrule
+	(true)
+=>
+	(up-full-reset-search)
+	(up-find-remote c: town-center c: 16)
+;	(up-filter-status c: status-pending c: list-active)
+;	(up-find-status-remote c: town-center-foundation c: 1)
+	(up-remove-objects search-remote object-data-map-zone-id g:!= migration-zone)
+	(up-remove-objects search-remote object-data-map-zone-id g:== starting-zone)
+	(up-filter-exclude -1 actionid-research orderid-research -1)
+	(up-find-local c: town-center c: 16)
+	(up-find-local c: mill c: 16)
+	(up-filter-status c: status-pending c: list-active)
+	(up-find-status-local c: town-center-foundation c: 16)
+	(up-find-status-local c: mill c: 16)
+	(up-remove-objects search-local object-data-map-zone-id g:!= starting-zone)
+	(up-remove-objects search-local object-data-map-zone-id g:== migration-zone)
+;	(up-chat-data-to-player my-player-number "starting-zone: %d" g: starting-zone)
+;	(up-chat-data-to-player my-player-number "migration-zone: %d" g: migration-zone)
+;	(up-chat-data-to-player my-player-number "sn-focus-player-number: %d" s: sn-focus-player-number)
+	(up-get-search-state local-total))
+(defrule
+	(up-compare-goal local-total >= 1)
+	(up-compare-goal remote-total >= 1)
+(or	(up-compare-const scenario-game != 1)
+	(building-type-count-total town-center >= 2))
+=>
+	(chat-local-to-self "Deleting old town-centers and mills.")
+	(up-target-point 0 action-stop -1 -1);	(up-reset-building 1 c: town-center)
+	(up-modify-goal relocating c:max 1)
+	(up-target-point 0 action-delete -1 -1))
+(defrule
+(or	(up-compare-const instant-dock == 1)
+	(and	(building-type-count-total mill <= 0)
+		(building-type-count-total town-center <= 0)))
+	(building-type-count-total dock >= 1)
+	(building-type-count dock <= 0)
+	(unit-type-count-total livestock-class >= 1)
+	(game-time >= 32)
+=>
+	(up-full-reset-search)
+	(up-find-local c: livestock-class c: 24)
+	(up-remove-objects search-local object-data-action == actionid-move);
+	(up-get-point position-border temporary-point-x)
+	(up-set-target-point temporary-point-x)
+	(up-target-point 0 action-move -1 -1)
+;	(disable-self)
+)
+(defrule
+	(true)
+=>
+	(up-modify-goal escrow-state g:= temporary-goal8)
+	(up-modify-sn sn-focus-player-number g:= temporary-goal)); end big jump
+
+(defrule
+	(false)
+	(goal migration-state 1)
+	(unit-type-count transport-ship >= 1)
+=>
+	(up-full-reset-search)
+	(up-filter-garrison c: 1 c: -1)
+	(up-find-local c: transport-ship c: maxtransports)
+	(up-remove-objects search-local object-data-map-zone-id g:== migration-zone)
+	(up-get-search-state local-total))
+(defrule
+	(false)
+	(up-compare-goal local-total >= 1)
+	(goal migration-state 1)
+	(unit-type-count transport-ship >= 1)
+=>
+	(up-set-target-object search-local c: 0)
+	(up-get-object-data object-data-order temporary-goal)
+	(up-chat-data-to-self "temporary-goal000: %d" g: temporary-goal)
+	(up-get-object-data object-data-action temporary-goal2)
+	(up-chat-data-to-self "temporary-goal2000: %d" g: temporary-goal2)
+	(up-get-object-data object-data-move-x point-x)
+	(up-get-object-data object-data-move-y point-y)
+	(up-send-flare point-x))
+
+(defrule
+(or	(up-compare-const diff-fp <= 0)
+(or	(up-compare-const koth-game == 1)
+	(up-compare-const br-game == 1)))
+=>
+	(up-jump-rule 5))
+(defrule
+	(game-time < 1800)
+	(unit-type-count 134 >= 2); dead monk
+;	(cc-players-unit-type-count 0 relic >= 1)
+	(goal underattack no)
+	(goal attacking no)
+	(up-compare-goal excessGold < 1700)
+=>
+	(up-full-reset-search)
+	(up-filter-include -1 -1 orderid-relic -1)
+	(up-find-local c: monk c: 240)
+	(up-target-point 0 action-stop -1 -1))
+(defrule
+(or	(players-building-type-count target-player castle >= 1)
+	(players-building-type-count target-player bombard-tower >= 1))
+	(unit-type-count battering-ram-line <= 0)
+	(military-population < 50)
+=>
+	(up-jump-rule 1))
+(defrule
+	(up-timer-status monkpatrol != timer-running)
+	(goal attacking yes)
+	(strategic-number sn-military-superiority <= 3)
+	(goal inseln no)
+	(unit-type-count monk-set >= 1)
+	(players-building-count target-player >= 1)
+=>
+;	(chat-local-to-self text-patrolling-monks)
+	(up-full-reset-search)
+	(up-get-point position-target point-x)
+	(up-set-target-point point-x)
+	(up-filter-distance c: 16 c: -1); 1:5
+	(up-filter-include cmdid-monk -1 -1 on-mainland)
+	(up-filter-exclude -1 actionid-convert orderid-relic -1)
+	(up-find-local c: monastery-class c: 240)
+	(up-target-point 0 action-patrol -1 -1)
+	(enable-timer monkpatrol 32)
+	(up-jump-rule 2)); end jump
+(defrule
+	(up-timer-status monkpatrol != timer-running)
+	(goal attacking yes)
+	(strategic-number sn-military-superiority <= 3)
+	(goal inseln no)
+	(unit-type-count monk-set >= 1)
+	(players-building-count target-player >= 1)
+=>
+	(up-full-reset-search)
+	(up-modify-goal temporary-goal s:= sn-focus-player-number)
+	(set-strategic-number sn-focus-player-number my-player-number)
+	(up-get-point position-target point-x)
+	(up-set-target-point point-x)
+;tl	(up-filter-distance c: -1 c: 48)
+	(up-filter-exclude -1 -1 orderid-explore warship-class)
+	(up-filter-include cmdid-military -1 -1 on-mainland)
+	(up-find-remote c: all-units-class c: 40)
+	(up-clean-search search-remote object-data-hitpoints search-order-asc)
+	(up-modify-sn sn-focus-player-number g:= temporary-goal))
+(defrule
+	(up-set-target-object search-remote c: 0)
+	(up-timer-status monkpatrol != timer-running)
+	(goal attacking yes)
+	(strategic-number sn-military-superiority <= 3)
+	(goal inseln no)
+	(unit-type-count monk-set >= 1)
+	(players-building-count target-player >= 1)
+=>
+;	(chat-local-to-self text-patrolling-monks)
+	(up-get-point position-object point-x)
+	(up-set-target-point point-x)
+	(up-full-reset-search);
+	(up-filter-distance c: 4 c: -1)
+	(up-filter-include cmdid-monk -1 -1 on-mainland)
+	(up-filter-exclude -1 actionid-convert orderid-relic -1)
+	(up-find-local c: monastery-class c: 240)
+	(up-target-point 0 action-patrol -1 -1)
+	(enable-timer monkpatrol 8)); end jump
+(defrule
+	(timer-triggered monkpatrol)
+	(up-timer-status patrol-timer == timer-disabled)
+	(up-timer-status resetnow != timer-running)
+	(goal patroldefense no)
+	(goal patrolhelp no)
+	(up-timer-status unit-control-flare-timer2 == timer-disabled)
+=>
+	(up-reset-unit c: monastery-class)
+	(disable-timer monkpatrol))
+
+(defrule
+(or	(unit-type-count packed-trebuchet-class <= 0)
+(or	(up-compare-const diff-fp != 1)
+(or	(goal attacking yes)
+	(goal underattack yes))))
+=>
+	(up-jump-rule 2))
+(defrule
+	(true)
+=>
+	(up-full-reset-search)
+	(up-set-target-point position-self-x)
+	(up-modify-goal temporary-goal s:= sn-safe-town-size)
+	(up-modify-goal temporary-goal c:max 16)
+	(up-filter-distance g: temporary-goal c: -1)
+	(up-filter-include -1 -1 -1 on-mainland)
+	(up-filter-exclude -1 actionid-attack orderid-attack -1)
+	(up-find-local c: packed-trebuchet-class c: 16)
+	(up-remove-objects search-local object-data-action == actionid-move)
+	(up-remove-objects search-local object-data-order == orderid-move)
+	(up-remove-objects search-local object-data-type == packed-town-center))
+(defrule
+	(up-set-target-object search-local c: 0)
+=>
+	(chat-local-to-self "Pulling back packed trebuchet.")
+	(up-clean-search search-local object-data-distance search-order-desc)
+	(up-set-target-object search-local c: 0)
+	(up-get-point position-object object-point-x)
+	(up-lerp-percent object-point-x position-self-x c: 67); 50
+	(up-set-target-point object-point-x)
+	(up-target-point 0 action-move -1 -1)); end jump
+
+
+#load-if-defined KING-OF-THE-HILL
+(defrule
+	(up-timer-status unit-control-flare-timer2 == timer-running)
+	(up-compare-goal victory-time >= 500)
+(nor	(cc-players-unit-type-count any-human-ally flare >= 1)
+	(taunt-detected any-human-ally tFlarePatrol))
+=>
+	(disable-timer unit-control-flare-timer2)
+	(up-reset-unit c: -1)
+	(set-strategic-number sn-disable-defend-groups 0)
+	(set-strategic-number sn-gather-defense-units 1)
+	(enable-timer spread 90)
+	(set-goal retreat yes)
+	(set-goal reset yes))
+(defrule
+	(up-timer-status unit-control-flare-timer2 == timer-running)
+	(up-timer-status embassy == timer-triggered)
+(nor	(cc-players-unit-type-count any-human-ally flare >= 1)
+	(taunt-detected any-human-ally tFlarePatrol))
+=>
+	(chat-local-to-self "Continue KotH patrol.")
+; test	(up-reset-unit c: -1)
+	(up-full-reset-search)
+	(up-set-target-point unit-flare-point-x)
+	(up-filter-exclude -1 actionid-attack orderid-explore -1)
+	(up-filter-distance c: 8 c: -1)
+	(up-filter-include cmdid-military -1 -1 -1)
+	(up-find-local c: all-units-class c: 240)
+	(up-filter-include cmdid-monk -1 -1 -1);
+	(up-find-local c: all-units-class c: 240);
+	(up-target-point 0 action-patrol -1 stance-aggressive));-defensive
+(defrule
+(or	(up-timer-status unit-control-flare-timer2 == timer-running); 222
+(or	(up-timer-status patrol-timer == timer-running)
+	(enemy-buildings-in-town)))
+=>
+	(up-jump-rule 4))
+(defrule
+	(up-compare-goal victory-time < 500)
+	(up-compare-goal victory-time >= 0)
+=>
+	(up-get-point position-center unit-flare-point-x); up
+	(set-goal temporary-goal9 125490))
+(defrule
+	(goal temporary-goal9 125490)
+	(up-point-zone unit-flare-point-x g:== main-zone)
+=>
+; test	(up-reset-unit c: -1)
+	(set-strategic-number sn-disable-defend-groups 1)
+	(set-strategic-number sn-gather-defense-units 0)
+	(enable-timer unit-control-flare-timer2 1200)
+	(disable-timer spread)
+	(set-goal retreat no)
+	(set-goal reset no)
+	(up-full-reset-search)
+	(up-set-target-point unit-flare-point-x)
+	(up-filter-exclude -1 actionid-attack orderid-explore -1)
+	(up-filter-distance c: 8 c: -1)
+	(up-filter-include cmdid-military -1 -1 -1)
+	(up-find-local c: all-units-class c: 240)
+	(up-filter-include cmdid-monk -1 -1 -1)
+	(set-goal temporary-goal9 125493))
+(defrule
+	(goal temporary-goal9 125493)
+=>
+	(chat-local-to-self "Start KotH patrol.")
+	(up-find-local c: all-units-class c: 240)
+	(up-target-point 0 action-patrol -1 stance-aggressive));-defensive; end jump
+#end-if
+
+(defrule ; debug rule
+(or	(strategic-number sn-focus-player-number >= 9)
+(or	(strategic-number sn-focus-player-number <= 0)
+	(stance-toward focus-player ally)))
+	(strategic-number sn-target-player-number >= 1)
+	(strategic-number sn-target-player-number <= 8)
+(not	(stance-toward target-player ally))
+	(player-in-game target-player)
+=>
+;(up-chat-data-to-player my-player-number "sn-focus-player-number: %d" s: sn-focus-player-number)
+;(up-chat-data-to-player my-player-number "sn-target-player-number: %d" s: sn-target-player-number)
+	(up-modify-goal temporary-goal s:= sn-target-player-number); to prevent further bugs
+	(up-modify-sn sn-focus-player-number s:= sn-target-player-number); should be an enemy
+	(chat-to-player my-player-number "Debugging focus player. 3,6"))
+;==============================================================
+; Scouting
+;==============================================================
+(defrule
+	(up-compare-goal scouting != yes)
+=>
+;	(chat-local-to-self "It's happening.")
+	(set-goal scouting yes))
+(defrule
+(or	(not	(resource-found food))
+(or	(not	(resource-found wood))
+;(or	(goal attacking yes)
+(or	(strategic-number sn-percent-civilian-explorers >= 1)
+(or	(strategic-number sn-minimum-civilian-explorers >= 1)
+	(strategic-number sn-cap-civilian-explorers >= 1)))));)
+	(up-compare-goal deer-luring != 1)
+=>
+	(up-jump-rule 7))
+(defrule
+(or	(up-compare-goal custom-civ-pop >= up-max-civ)
+	(population >= max-civ-pop))
+	(up-compare-goal deer-luring != 1)
+=>
+	(up-jump-rule 6))
+(defrule
+(or	(civilian-population >= up-max-civ)
+(or	(military-population >= 21)
+(or	(building-type-count-total town-center <= 0)
+(or	(and	(game-time s:>= sn-home-exploration-time)
+		(players-building-count any-enemy < 1))
+	(population >= eighty-pop)))))
+	(up-compare-goal deer-luring != 1)
+=>
+	(up-jump-rule 5))
+(defrule
+	(military-population < 16)
+(or	(goal enemy-goal drush)
+(or	(and	(goal underattack yes)
+		(players-building-count any-enemy >= 1))
+	(and	(enemy-buildings-in-town)
+		(and	(goal attacking no)
+			(and	(strategic-number sn-current-age <= dfeudal)
+				(military-population <= 2))))))
+=>
+	(set-goal scouting no))
+(defrule
+	(population < up-max-civ)
+	(military-population < 10)
+	(goal position-goal flank)
+	(up-compare-goal targetdistance < 90)
+(or	(players-unit-type-count target-player skirmisher-line >= 15)
+(or	(strategic-number infantry >= 10); all 5
+(or	(strategic-number cavalry >= 10)
+(or	(strategic-number archers >= 10)
+(or	(strategic-number moenche >= 10)
+	(strategic-number siege >= 10))))))
+=>
+	(set-goal scouting no))
+(defrule
+;	(game-time < 3000)
+;	(population < siege-pop)
+	(goal deer-luring 1)
+=>
+	(set-goal scouting no))
+(defrule
+	(game-time < 960)
+	(players-building-count target-player >= 1)
+(or	(goal drushmicro yes)
+	(goal scoutmicro yes))
+(or	(up-group-size c: 8 >= 1)
+	(and	(unit-type-count scout-unit <= 0)
+		(up-compare-goal scouting-unit <= -1)))
+=>
+	(set-goal scouting no))
+(defrule
+	(goal attacking yes)
+	(unit-type-count scout-unit <= 0)
+	(up-compare-goal scouting-unit <= -1)
+	(population < up-max-civ)
+	(players-building-count target-player >= 1)
+(or	(player-in-game target-player)
+	(players-building-count every-enemy >= 1))
+(or	(up-compare-goal drushmicro != yes)
+	(up-compare-goal drushtarget != 0))
+=>
+	(set-goal scouting no)); end jump
+
+(defrule
+(or	(strategic-number sn-percent-civilian-explorers != 0)
+(or	(strategic-number sn-minimum-civilian-explorers != 0)
+	(strategic-number sn-cap-civilian-explorers != 0)))
+(or	(strategic-number sn-total-number-explorers == 1)
+	(strategic-number sn-number-explore-groups == 1))
+=>
+	(set-strategic-number sn-percent-civilian-explorers 0)
+	(set-strategic-number sn-minimum-civilian-explorers 0)
+	(set-strategic-number sn-cap-civilian-explorers 0)
+	(up-reset-scouts))
+(defrule
+	(goal scouting no)
+	(strategic-number sn-cap-civilian-explorers <= 0)
+(or	(strategic-number sn-total-number-explorers >= 1)
+	(strategic-number sn-number-explore-groups >= 1))
+=>
+;	(chat-local-to-self "Disable scouting.")
+	(set-strategic-number sn-total-number-explorers 0)
+	(set-strategic-number sn-number-explore-groups 0)
+	(up-reset-scouts))
+(defrule
+	(goal scouting yes)
+	(players-building-count any-enemy >= 1)
+(or	(goal underattack yes)
+(or	(players-current-age any-enemy >= feudal-age)
+	(strategic-number sn-current-age >= feudal)))
+;	(strategic-number sn-number-boat-explore-groups <= 0)
+	(strategic-number sn-cap-civilian-explorers <= 0)
+(or	(strategic-number sn-total-number-explorers >= 2)
+	(strategic-number sn-number-explore-groups >= 2))
+=>
+	(set-strategic-number sn-total-number-explorers 1)
+	(set-strategic-number sn-number-explore-groups 1)
+	(up-reset-scouts))
+(defrule
+	(goal scouting yes)
+(or	(strategic-number sn-total-number-explorers <= 0)
+	(strategic-number sn-number-explore-groups <= 0))
+=>
+;	(chat-local-to-self "Re-enable scouting.")
+	(up-modify-sn sn-total-number-explorers c:+ 1)
+	(up-modify-sn sn-number-explore-groups c:+ 1)
+	(up-reset-scouts))
+(defrule
+(or	(players-building-count any-enemy >= 1)
+(or	(and	(up-compare-goal gl-threat-time < 30000)
+		(up-compare-goal gl-threat-player >= 1))
+(or	(up-compare-goal underattack != no)
+	(town-under-attack))))
+=>
+	(up-jump-rule 2))
+(defrule
+	(game-time s:>= sn-home-exploration-time)
+(or	(goal strategy drush)
+(or	(goal strategy s-flush)
+(or	(goal drushmicro yes)
+	(goal scoutmicro yes))))
+	(players-building-count any-enemy >= 1)
+=>
+	(up-jump-rule 1))
+(defrule
+	(goal scouting yes)
+	(military-population >= 2)
+	(players-building-count any-enemy <= 0); every
+(or	(game-time s:< sn-home-exploration-time)
+	(and	(players-current-age every-enemy < feudal-age)
+		(strategic-number sn-current-age < feudal)))
+	(goal drushmicro no)
+	(goal scoutmicro no)
+(or	(strategic-number sn-total-number-explorers <= 1)
+	(strategic-number sn-number-explore-groups <= 1))
+=>
+	(up-modify-sn sn-total-number-explorers c:+ 1)
+	(up-modify-sn sn-number-explore-groups c:+ 1)
+;	(up-modify-sn sn-home-exploration-time c:* 7)
+;	(up-modify-sn sn-home-exploration-time c:/ 8)
+;	(up-reset-scouts)
+); end jump
+
+
+#load-if-not-defined HAMBURGER-MAP
+(defrule
+	(goal scouting yes)
+;	(goal tradecarts yes)
+	(players-building-count every-enemy >= 1)
+	(building-available market)
+(or	(and	(goal position-goal pocket)
+		(goal milunits no))
+	(players-building-type-count any-ally market >= 1))
+	(game-time s:> sn-home-exploration-time)
+(or	(up-compare-goal deer-luring <= 0)
+	(up-compare-goal deer-luring >= 3))
+	(military-population >= 1)
+=>
+	(chat-local-to-self "Exploring the closest corner of the map.")
+	(up-send-scout group-type-land-explore scout-corner)
+	(disable-self))
+#end-if
+#load-if-not-defined DEATH-MATCH
+#load-if-defined GHOST-LAKE-MAP
+(defrule
+	(game-time < 600)
+	(game-time s:> sn-home-exploration-time)
+	(players-building-count every-enemy >= 1)
+	(up-timer-status sheepscout != timer-running)
+(nand	(up-compare-goal deer-luring >= 1)
+	(up-compare-goal deer-luring <= 2))
+=>
+	(chat-local-to-self "Exploring the center of the map.")
+	(up-send-scout group-type-land-explore scout-center)
+	(disable-self))
+#end-if
+#load-if-defined SCANDANAVIA-MAP
+(defrule
+	(game-time < 1200)
+	(game-time s:>= sn-home-exploration-time)
+(or	(players-building-count every-enemy >= 1)
+	(up-timer-status scout == timer-disabled))
+	(building-type-count-total dock <= 0)
+	(up-timer-status sheepscout != timer-running)
+(nand	(up-compare-goal deer-luring >= 1)
+	(up-compare-goal deer-luring <= 2))
+=>
+	(chat-local-to-self "Exploring the corner of the map.")
+	(up-send-scout group-type-land-explore scout-corner)
+	(disable-self))
+#end-if
+#end-if
+
+#load-if-not-defined UP-MICHI-STYLE	
+(defrule
+	(game-time < 1020)
+	(goal scouting yes)
+=>
+	(up-full-reset-search)
+	(up-get-point scouting-type point-x)
+	(up-get-point-distance position-self-x point-x temporary-goal))
+(defrule
+	(game-time < 1020)
+	(goal scouting yes)
+(or	(up-compare-goal temporary-goal < 40)
+	(up-compare-goal temporary-goal >= 200))
+=>
+	(set-goal c-scout-time -1))
+(defrule
+(or	(military-population <= 0)
+(or	(goal inseln yes)
+(or	(and	(up-compare-goal deer-luring >= 1)
+		(up-compare-goal deer-luring < 3))
+(or	(game-time >= 1020)
+(or	(goal scouting no)
+	;(and	(goal scouting yes)
+		(up-compare-goal temporary-goal < 40))))));)
+=>
+	(up-jump-rule 6))
+(defrule
+	(goal scouting yes)
+(or	(game-time s:> sn-home-exploration-time)
+	(timer-triggered scout))
+	(goal inseln no)
+	(players-building-count any-enemy <= 0); every
+	(up-compare-goal milunits != no);
+=>
+	(chat-local-to-self "Searching for the closest enemy.")
+	(up-send-scout group-type-land-explore scouting-type)
+	(disable-self))
+(defrule
+	(players-building-count target-player >= 1)
+=>
+	(up-full-reset-search)
+	(up-get-point scouting-type point-x)
+	(up-get-point position-target saved-point-x)); distance from the scouting point to the enemy
+(defrule
+(or	(up-timer-status scout != timer-triggered)
+(or	(up-compare-goal drushmicro != yes)
+(or	(and	(up-compare-goal strategy != drush)
+		(building-type-count-total barracks <= 0))
+(or	(up-compare-goal scouting != yes)
+	(goal milunits no)))))
+=>
+	(up-jump-rule 1))
+(defrule
+; tlj	(timer-triggered scout)
+(nand	(players-building-count every-enemy >= 1)
+	(and	(up-compare-goal drushtarget != lumber-camp)
+		(up-compare-goal drushtarget != mining-camp)))
+(or	(players-building-count every-enemy <= 0)
+(or	(and	(goal position-goal flank);
+		(up-point-distance point-x saved-point-x >= 35))
+	(up-compare-goal drushtarget == 0)))
+=>
+;	(chat-local-to-self "Drush: Rescouting in search of the closest enemy.")
+	(set-goal temporary-goal7 1885487);	(up-send-scout group-type-land-explore scouting-type)
+;	(disable-timer scout)
+;	(enable-timer scout 85)
+)
+(defrule
+(or	(up-compare-goal scouting != yes)
+	(up-compare-goal drushmicro == yes))
+=>
+	(up-jump-rule 1))
+(defrule
+	(timer-triggered scout)
+;	(unit-type-count-total archer-line >= 1)
+	(players-building-count any-enemy <= 0)
+(or	(players-building-count every-enemy <= 0)
+	(and	(goal position-goal flank);
+		(up-point-distance point-x saved-point-x >= 35)))
+=>
+;	(chat-local-to-self "Rescouting in search of the closest enemy.")
+	(set-goal temporary-goal7 1885487);	(up-send-scout group-type-land-explore scouting-type)
+;	(disable-timer scout)
+;	(enable-timer scout 85)
+) ; end jump 6
+
+
+
+
+(defrule
+	(timer-triggered scout)
+	(goal scouting yes)
+	(goal drushmicro yes)
+	(players-current-age target-player <= dark-age);
+	(up-compare-goal drushtarget != lumber-camp);(up-compare-goal drushtarget == 0)
+	(up-compare-goal drushtarget != mining-camp)
+	(goal inseln no)
+	(players-building-count target-player >= 1)
+(or	(up-compare-goal targetdistance < 60)
+	(players-building-count every-enemy >= 1))
+; nn	(goal attacking no)
+=>
+	(chat-local-to-self "Drush: Rescouting the target-player.")
+	(up-send-scout group-type-land-explore scout-enemy)
+	(disable-timer scout)
+	(enable-timer scout 28))
+
+(defrule
+;	(strategic-number sn-current-age <= feudal)
+(or	(up-compare-goal scouting != yes)
+(or	(and	(game-time < 600)
+		(or	(players-current-age every-enemy <= dark-age)
+			(and	(up-compare-goal targetdistance >= 60)
+				(players-building-count any-enemy <= 0))))
+(or	(goal inseln yes)
+(or	(wall-completed-percentage 2 >= 100)
+	(wall-completed-percentage 1 >= 100)))))
+=>
+	(up-jump-rule 5))
+(defrule
+	(up-compare-goal gl-threat-time >= 10000)
+	(timer-triggered scout)
+	(up-compare-goal strategy-type == feudal-war)
+	(up-compare-goal strategy != usual)
+	(players-building-type-count target-player lumber-camp <= 0)
+	(players-building-type-count target-player mining-camp <= 0)
+	(players-building-count target-player >= 1)
+; nn	(goal attacking no)
+=>
+	(up-full-reset-search)
+	(up-add-object-by-id search-local g: scouting-unit))
+(defrule
+	(up-set-target-object search-local c: 0)
+	(up-object-data object-data-hitpoints >= 33); 40
+	(up-compare-goal gl-threat-time >= 10000)
+	(timer-triggered scout)
+	(up-compare-goal strategy-type == feudal-war)
+	(up-compare-goal strategy != usual)
+	(players-building-type-count target-player lumber-camp <= 0)
+	(players-building-type-count target-player mining-camp <= 0)
+	(players-building-count target-player >= 1)
+; nn	(goal attacking no)
+=>
+	(chat-local-to-self "Flush: Rescouting the target-player.")
+	(up-send-scout group-type-land-explore scout-enemy)
+	(disable-timer scout)
+	(enable-timer scout 45))
+(defrule
+	(timer-triggered scout)
+	(players-current-age target-player == feudal-age)
+	(goal inseln no)
+	(players-military-population target-player >= 5)
+; mpop	(players-building-count target-player >= 1)
+	(goal attacking no)
+	(players-unit-type-count target-player skirmisher-line < 12)
+	(strategic-number infantry < 5)
+	(strategic-number cavalry < 5)
+	(strategic-number archers < 5)
+	(strategic-number gunpowder < 5)
+	(strategic-number moenche < 5)
+	(strategic-number siege < 5)
+=>
+;	(chat-local-to-self "Rescouting the target-player.")
+	(up-send-scout group-type-land-explore scout-enemy)
+	(disable-timer scout)
+	(enable-timer scout 60))
+(defrule
+	(timer-triggered scout)
+	(players-current-age target-player >= castle-age)
+	(goal inseln no)
+	(players-military-population target-player >= 20); 10
+	(strategic-number sn-military-superiority <= 0)
+; mpop	(players-building-count target-player >= 1)
+	(goal attacking no)
+	(players-unit-type-count target-player skirmisher-line < 30)
+	(strategic-number infantry < 10)
+	(strategic-number cavalry < 10)
+	(strategic-number archers < 10)
+	(strategic-number gunpowder < 10)
+	(strategic-number moenche < 10)
+	(strategic-number siege < 10)
+=>
+;	(chat-local-to-self "Rescouting the target-player.")
+	(up-send-scout group-type-land-explore scout-enemy)
+	(disable-timer scout)
+	(enable-timer scout 90)); 150; 120
+(defrule
+	(timer-triggered scout)
+	(players-current-age target-player >= castle-age)
+	(goal inseln no)
+	(players-military-population target-player >= 30); 10
+	(strategic-number sn-military-superiority >= 1)
+; mpop	(players-building-count target-player >= 1)
+	(goal attacking no)
+	(players-unit-type-count target-player skirmisher-line < 30)
+	(strategic-number infantry < 15)
+	(strategic-number cavalry < 15)
+	(strategic-number archers < 15)
+	(strategic-number gunpowder < 15)
+	(strategic-number moenche < 15)
+	(strategic-number siege < 15)
+=>
+;	(chat-local-to-self "Rescouting the target-player.")
+	(up-send-scout group-type-land-explore scout-enemy)
+	(disable-timer scout)
+	(enable-timer scout 120)); 150 ; end jump 5
+
+(defrule
+	(goal inseln yes)
+	(players-building-count every-enemy < 1)
+	(up-compare-goal navycount >= 1)
+	(strategic-number sn-number-boat-explore-groups >= 1)
+=>
+	(chat-local-to-self "Scouting the enemy.")
+	(up-send-scout group-type-water-explore scouting-type)
+	(disable-self))
+#end-if; ^ no michi
+
+
+
+(defrule
+(nand	(strategic-number sn-current-age >= dfeudal)
+	(unit-type-count-total fishing-ship <= 0))
+	(up-gaia-type-count c: ocean-fish-class <= 0)
+	(cc-players-unit-type-count 0 ocean-fish-class >= deepfishreq2)
+=>
+	(up-jump-rule 2))
+(defrule
+	(strategic-number sn-number-boat-explore-groups >= 1)
+(or	(and	(strategic-number sn-number-boat-explore-groups >= 2)
+		(players-building-count any-enemy >= 1))
+(or	(up-resource-amount amount-exploration >= 95); 100
+	(up-compare-goal navycount <= 0)))
+=>
+	(up-modify-sn sn-number-boat-explore-groups c:- 1)
+	(up-modify-sn sn-number-boat-explore-groups c:max 0))
+(defrule
+	(strategic-number sn-number-boat-explore-groups >= 1)
+	(strategic-number sn-military-superiority <= 0)
+	(goal attacking no)
+	(strategic-number sn-current-age < imperial)
+=>
+	(up-modify-sn sn-number-boat-explore-groups c:- 1)
+	(up-modify-sn sn-number-boat-explore-groups c:max 0))
+
+(defrule
+	(strategic-number sn-number-boat-explore-groups <= 0)
+(or	(players-building-count every-enemy <= 0); just to make sure
+(or	(goal attacking yes)
+;(or
+	(and	(strategic-number sn-military-superiority >= 0)
+		(population >= max-civ-pop))
+;	(goal researchplan yes))
+))
+	(up-compare-goal navycount >= 1)
+=>
+	(up-modify-sn sn-number-boat-explore-groups c:+ 1))
+(defrule
+	(strategic-number sn-number-boat-explore-groups <= 0)
+	(players-building-count every-enemy <= 0); any
+(or	(strategic-number sn-current-age >= imperial)
+	(and	(up-compare-goal strategy-type2 == water)
+		(or	(and	(strategic-number sn-current-age >= dfeudal)
+				(up-compare-goal strategy-type <= feudal-war))
+			(and	(strategic-number sn-current-age >= fcastlea)
+				(up-compare-goal strategy-type <= castle-war)))))
+=>
+	(up-modify-sn sn-number-boat-explore-groups c:+ 1))
+(defrule
+	(strategic-number sn-number-boat-explore-groups <= 0)
+	(goal inseln yes)
+	(players-building-type-count every-enemy dock <= 0); any
+(or	(strategic-number sn-current-age >= imperial)
+	(and	(up-compare-goal strategy-type2 == water)
+		(or	(and	(strategic-number sn-current-age >= dfeudal)
+				(up-compare-goal strategy-type <= feudal-war))
+			(and	(strategic-number sn-current-age >= fcastlea)
+				(up-compare-goal strategy-type <= castle-war)))))
+=>
+	(up-modify-sn sn-number-boat-explore-groups c:+ 1))
+(defrule
+	(strategic-number sn-number-boat-explore-groups <= 0)
+	(game-time < 5)
+	(goal inseln yes)
+(or	(unit-type-count fishing-ship >= 1)
+(or	(unit-type-count transport-ship >= 1)
+	(up-compare-goal navycount >= 1)))
+;	(up-compare-goal migration-state <= 0)
+	(goal attacking no)
+	(goal underattack no)
+=>
+	(up-modify-sn sn-number-boat-explore-groups c:+ 1))
+(defrule
+	(players-building-count every-enemy <= 0); any
+	(strategic-number sn-number-boat-explore-groups >= 1)
+(or	(unit-type-count fishing-ship >= 1)
+	(up-compare-goal navycount >= 1))
+	(goal inseln yes)
+=>
+	(up-send-scout group-type-water-explore scouting-type)
+	(disable-self))
+
+
+(defrule
+	(up-resource-amount amount-exploration >= 95); 100
+(or	(strategic-number sn-percent-civilian-explorers >= 1)
+(or	(strategic-number sn-minimum-civilian-explorers >= 1)
+	(strategic-number sn-cap-civilian-explorers >= 1)))
+(or	(military-population >= 1)
+	(game-time >= 480))
+	(game-time >= 30)
+	(building-type-count town-center >= 1)
+=>
+	(set-strategic-number sn-percent-civilian-explorers 0)
+	(set-strategic-number sn-minimum-civilian-explorers 0)
+	(set-strategic-number sn-cap-civilian-explorers 0))
+
+
+
+(defrule
+	(game-time < 750)
+	(up-compare-goal scouting-unit <= -1)
+	(building-type-count town-center >= 1)
+	(up-resource-amount amount-exploration < 80)
+	(goal defend no)
+	(goal underattack no)
+(or	(up-compare-goal attacking != yes)
+	(players-building-count target-player <= 0))
+	(unit-type-count villager >= 4); 2
+;	(strategic-number sn-minimum-civilian-explorers <= 0)
+=>
+	(set-strategic-number sn-percent-civilian-explorers 100)
+	(set-strategic-number sn-minimum-civilian-explorers 1)
+	(set-strategic-number sn-cap-civilian-explorers 1)
+	(set-strategic-number sn-total-number-explorers 2)
+	(set-strategic-number sn-number-explore-groups 2))
+(defrule
+	(true)
+=>
+	(up-full-reset-search)
+	(up-find-local c: scout-unit c: 1)
+	(up-filter-include cmdid-military -1 orderid-explore -1)
+	(up-find-local c: all-units-class c: 4)
+	(up-clean-search search-local -1 search-order-asc)
+	(up-get-search-state local-total))
+(defrule
+(or	(timer-triggered MSuperiority)
+	(game-time < 10))
+	(up-compare-goal local-total s:> sn-total-number-explorers)
+	(up-compare-goal local-total s:> sn-number-explore-groups)
+	(military-population >= 2)
+=>
+;	(up-chat-data-to-self "Resetting scouts: %d" g: local-total)
+	(up-reset-scouts))
+
+
+
+(defrule
+	(goal scouting yes)
+(or	(up-compare-const dm-game == 1)
+(or	(game-time >= 720)
+(or	(and	(game-time >= 420)
+		(or	(goal position-goal flank)
+			(up-compare-goal strategy-type <= feudal-war)))
+	(game-time s:>= sn-home-exploration-time))))
+	(up-timer-status scout != timer-running)
+	(up-timer-status scout != timer-triggered)
+=>
+	(enable-timer scout 2)
+;	(chat-local-to-self "Scouting timer enabled.")
+)
+
+
+#load-if-not-defined HAMBURGER-MAP
+#load-if-not-defined ISLANDS-MAP
+#load-if-not-defined TEAM-ISLANDS-MAP
+#load-if-not-defined UP-MICHI-STYLE
+#load-if-not-defined DIFFICULTY-EASIEST
+#load-if-not-defined DIFFICULTY-EASY
+#load-if-not-defined DIFFICULTY-MODERATE
+(defrule
+	(game-time g:< c-scout-time)
+(or	(map-type arena)
+(or	(map-type fortress)
+(or	(players-building-count every-enemy >= 1)
+	(and	(goal position-goal flank)
+		(and	(up-compare-goal targetdistance < 60)
+			(players-building-count any-enemy >= 1))))))
+=>
+	(set-goal c-scout-time -1))
+(defrule
+	(game-time g:< c-scout-time)
+(or	(up-compare-const dm-game == 1)
+(or	(goal map water)
+(or	(players-building-type-count any-enemy stone-wall-line >= 4)
+(or	(players-building-type-count any-enemy palisade-wall >= 20)
+(or	(players-building-type-count any-enemy gate >= 2)
+	(goal inseln yes))))))
+=>
+	(set-goal c-scout-time -1))
+(defrule
+	(game-time >= 900)
+(or	(wall-completed-percentage 2 >= 100)
+	(wall-completed-percentage 1 >= 100))
+(or	(goal inseln yes)
+(or	(building-type-count stone-wall-line >= 4)
+(or	(building-type-count palisade-wall >= 20)
+	(building-type-count gate >= 2))))
+	(players-building-type-count any-enemy stone-wall-line >= 4)
+	(players-building-type-count any-enemy palisade-wall >= 20)
+	(players-building-type-count any-enemy gate >= 2)
+=>
+	(up-jump-rule 17))
+(defrule
+(or	(game-time >= 960)
+(or	(game-time g:>= c-scout-time)
+;(or	(up-compare-goal temporary-goal7 != 1885487)
+(or	(game-time s:< sn-home-exploration-time);
+(or	(up-compare-goal scouting != yes)
+(or	(up-timer-status scout != timer-triggered)
+(or	(up-compare-goal scouting-unit <= -1);(or	(strategic-number sn-current-age > dark)
+(or	(players-building-count every-enemy >= 1)
+	(unit-type-count scout-unit <= 0))))))));)
+=>
+	(up-jump-rule 5))
+(defrule
+	(true)
+=>
+	(up-get-fact game-time 0 c-scout-time)
+	(up-modify-goal c-scout-time c:+ scout-time)
+	(up-modify-goal temporary-goal c:= scout-time)
+	(up-modify-goal temporary-goal c:/ 4)
+	(up-modify-goal c-scout-time g:- temporary-goal)
+	(up-modify-goal temporary-goal g:* position-goal)
+	(up-modify-goal c-scout-time g:+ temporary-goal)
+;	(up-chat-data-to-player my-player-number "c-scout-time: %d" g: c-scout-time)
+	(disable-self))
+(defrule
+	(true)
+=>
+	(up-get-point scouting-type saved-point-x)
+;	(up-chat-data-to-player my-player-number "saved-point-x: %d" g: saved-point-x)
+;	(up-chat-data-to-player my-player-number "saved-point-y: %d" g: saved-point-y)
+	(up-copy-point temporary-point-x position-self-x)
+	(up-cross-tiles temporary-point-x saved-point-x c: 20)
+	(up-set-target-point temporary-point-x)
+;	(up-send-flare temporary-point-x)
+	(up-get-point position-center point-x)
+	(up-get-point-distance temporary-point-x point-x temporary-goal)
+	(up-get-point-distance position-self-x point-x temporary-goal2)
+;	(up-chat-data-to-player my-player-number "temporary-goal: %d" g: temporary-goal)
+;	(up-chat-data-to-player my-player-number "temporary-goal2: %d" g: temporary-goal2)
+	(set-goal temporary-goal3 16)); 18
+(defrule
+	(up-compare-goal temporary-goal g:<= temporary-goal2)
+=>
+	(set-goal temporary-goal3 -16))
+(defrule
+	(true)
+=>
+	(disable-timer scout)
+	(enable-timer scout 12)
+	(up-full-reset-search)
+	(up-get-point position-center point-x)
+	(up-get-point-distance point-x saved-point-x temporary-goal5)
+	(up-add-object-by-id search-local g: scouting-unit)
+	(up-set-target-object search-local c: 0)
+	(up-get-point position-object saved-point-x)
+	(up-get-point-distance point-x position-self-x temporary-goal4)
+	(up-modify-goal temporary-goal4 g:+ temporary-goal5)
+	(up-modify-goal temporary-goal4 c:/ 2)
+	(up-modify-goal temporary-goal4 c:max scout-dist)
+	(up-copy-point temporary-point-x point-x))
+(defrule
+	(up-set-target-object search-local c: 0)
+=>
+	(up-lerp-tiles point-x saved-point-x g: temporary-goal4)
+;	(up-chat-data-to-player my-player-number "temporary-goal4: %d" g: temporary-goal4)
+	(up-cross-tiles point-x temporary-point-x g: temporary-goal3)
+	(up-bound-precise-point point-x 0 c: scout-los)
+;	(up-send-flare point-x)
+	(chat-local-to-self "Vier.")
+	(up-set-target-point point-x)
+	(up-target-point 0 action-move -1 stance-no-attack)); -1))
+
+(defrule
+	(timer-triggered scout)
+	(game-time g:>= c-scout-time)
+(or	(players-building-count every-enemy <= 0)
+	(and	(goal position-goal flank)
+		(and	(up-compare-goal targetdistance >= 80); 90
+			(players-building-count any-enemy <= 0))))
+	(military-population >= 1)
+=>
+	(up-send-scout group-type-land-explore scouting-type)
+	(disable-self))
+(defrule
+(or	(game-time >= 960)
+(or	(up-compare-goal temporary-goal7 != 1885487)
+(or	(game-time g:< c-scout-time)
+(or	(up-compare-goal scouting != yes)
+(or	(up-timer-status scout != timer-triggered)
+(or	(up-compare-goal scouting-unit <= -1);(or	(strategic-number sn-current-age > dark)
+(or	(players-building-count every-enemy >= 1)
+	(unit-type-count scout-unit <= 0))))))))
+=>
+	(up-jump-rule 10))
+(defrule
+	(true)
+=>
+	(set-goal temporary-goal 0)
+	(disable-timer scout)
+	(enable-timer scout 8)
+	(up-full-reset-search)
+	(up-add-object-by-id search-local g: scouting-unit)
+	(up-get-point position-object point-x)
+	(up-get-point scouting-type temporary-point-x))
+(defrule
+	(up-point-explored temporary-point-x == explored-no)
+=>
+;	(chat-local-to-self "Eins.")
+;	(up-send-scout group-type-land-explore scouting-type)
+	(up-set-target-point temporary-point-x)
+	(up-target-point 0 action-move -1 stance-no-attack); -1)
+	(up-jump-rule 8))
+(defrule
+	(up-compare-goal temporary-goal <= 0)
+=>
+	(up-get-point scouting-type temporary-point-x)
+	(up-lerp-tiles temporary-point-x point-x c: scout-dist)
+	(up-copy-point point-x temporary-point-x)
+	(up-get-point scouting-type temporary-point-x)
+	(up-cross-tiles point-x temporary-point-x c: 12)
+)
+(defrule
+	(up-set-target-object search-local c: 0)
+(or	(or	(up-compare-goal point-x g:>= map-size)
+		(up-compare-goal point-y g:>= map-size))
+	(or	(up-compare-goal point-x < 0)
+		(up-compare-goal point-y < 0)))
+	(up-point-distance temporary-point-x point-x > scout-dist)
+=>
+	(up-lerp-tiles point-x temporary-point-x c: scout-dist)
+	(up-jump-rule -1))
+(defrule
+	(up-set-target-object search-local c: 0)
+	(up-point-explored point-x != explored-no)
+	(up-compare-goal point-x g:<= map-size)
+	(up-compare-goal point-y g:<= map-size)
+	(up-compare-goal point-x >= 0)
+	(up-compare-goal point-y >= 0)
+;	(up-point-distance temporary-point-x point-x > scout-dist)
+=>
+	(up-cross-tiles point-x temporary-point-x c: 12);	(up-lerp-tiles point-x temporary-point-x c: neg-scout-dist)
+;	(up-jump-rule -1)
+)
+(defrule
+	(up-set-target-object search-local c: 0)
+(or	(up-point-contains point-x c: tree-class)
+(or	(up-point-contains point-x c: gold-mine-class)
+(or	(up-point-contains point-x c: stone-mine-class)
+(or	(up-point-contains point-x c: forage-bush-class)
+(or	(up-point-terrain point-x == terrain-water)
+	(up-point-terrain point-x == terrain-water-deep))))))
+;	(up-point-distance temporary-point-x point-x > scout-dist)
+=>
+	(up-cross-tiles point-x temporary-point-x c: 2);	(up-lerp-tiles point-x temporary-point-x c: neg-scout-dist)
+;	(up-jump-rule -1)
+)
+(defrule
+	(up-set-target-object search-local c: 0)
+(or	(up-point-terrain point-x == terrain-water-medium)
+	(up-point-terrain point-x == terrain-water-old))
+;	(up-point-distance temporary-point-x point-x > scout-dist)
+=>
+	(up-cross-tiles point-x temporary-point-x c: 2);	(up-lerp-tiles point-x temporary-point-x c: neg-scout-dist)
+;	(up-jump-rule -1)
+)
+(defrule
+	(up-point-explored point-x != explored-no)
+	(up-compare-goal temporary-goal <= 0)
+=>
+;	(up-cross-tiles point-x temporary-point-x c: 12)
+	(up-modify-goal temporary-goal c:+ 1)
+	(up-lerp-tiles point-x temporary-point-x c: neg-scout-dist)
+	(up-jump-rule -5))
+(defrule
+	(up-set-target-object search-local c: 0)
+	(up-point-explored point-x == explored-no)
+=>
+;	(chat-local-to-self "Zwei.")
+	(up-set-target-point point-x)
+	(up-target-point 0 action-move -1 stance-no-attack); -1)
+	(up-jump-rule 1))
+(defrule
+	(true)
+=>
+;	(chat-local-to-self "Drei.")
+	(enable-timer scout 24); 3000
+	(disable-self)); end jump
+#end-if; difficulty
+#end-if; -
+#end-if; levels
+#end-if; was no michi
+#end-if; and both
+#end-if; islands
+#else
+(defrule
+(or	(goal buildlumber no)
+(or	(game-time >= 600)
+(or	(up-timer-status threesec == timer-running)
+	(and	(building-type-count lumber-camp >= 1)
+		(and	(dropsite-min-distance wood <= 20)
+			(dropsite-min-distance wood s:<= sn-maximum-wood-drop-distance))))))
+=>
+	(up-jump-rule 4))
+(defrule
+	(true)
+=>
+	(up-full-reset-search)
+	(up-copy-point saved-point-x center-x)
+	(up-lerp-percent saved-point-x position-self-x c: -50)
+	(up-set-target-point saved-point-x)
+;	(up-find-local c: villager-class g: villagercount)
+;	(up-clean-search search-local object-data-distance search-order-desc)
+	(up-add-object-by-id search-local g: scouting-unit)
+;	(up-clean-search search-local object-data-index search-order-desc)
+)
+(defrule
+	(up-set-target-object search-local c: 0)
+=>
+	(up-remove-objects search-local object-data-index >= 1)
+	(up-copy-point point-x position-self-x)
+	(set-goal temporary-goal 2)
+	(up-modify-goal temporary-goal c:min scout-los))
+(defrule
+	(up-set-target-object search-local c: 0)
+	(up-point-distance point-x saved-point-x >= scout-los)
+	(up-point-explored point-x != explored-no)
+(not	(up-point-contains point-x c: tree-class))
+=>
+	(up-lerp-tiles point-x saved-point-x g: temporary-goal)
+	(up-jump-rule -1))
+(defrule
+	(up-set-target-object search-local c: 0)
+	(up-point-explored point-x == explored-no)
+(not	(up-point-contains point-x c: tree-class))
+=>
+	(chat-local-to-self "Trying to find the patty.")
+	(up-set-target-point point-x)
+;	(up-send-flare saved-point-x)
+;	(up-send-flare point-x)
+	(up-target-point 0 action-move -1 stance-no-attack)); end jump
+#end-if
+;==============================================================
+; Group and spread military units
+;==============================================================
+(defrule
+	(building-type-count watch-tower <= 0)
+	(building-type-count blacksmith <= 0)
+	(building-type-count siege-workshop <= 0)
+	(building-type-count monastery <= 0)
+	(building-type-count barracks <= 0)
+	(building-type-count archery-range <= 0)
+	(building-type-count stable <= 0)
+	(building-type-count castle <= 0)
+	(building-type-count krepost <= 0)
+	(building-type-count bombard-tower <= 0)
+	(building-type-count town-center <= 1)
+	(building-type-count dock <= 0)
+	(building-type-count market <= 0)
+=>
+	(up-jump-rule 15))
+(defrule
+(or	(game-time >= 2700)
+(or	(up-compare-const diff-fp <= 0)
+(or	(building-type-count town-center <= 0)
+(or	(up-compare-goal defend != no)
+	(up-compare-goal relocating != no)))))
+=>
+	(up-jump-rule 14))
+(defrule
+(or	(up-timer-status group-timer == timer-running)
+(or	(goal gatherinside yes)
+;(or	(goal position-goal pocket)
+(or	(up-compare-goal attacking != no)
+(or	(up-compare-goal underattack != no)
+(or	(up-compare-goal gl-threat-time < 16000); 12000
+	(up-compare-goal patrolhelp != no))))));)
+=>
+	(up-jump-rule 13))
+(defrule
+(or	(up-compare-goal scoutmicro != no)
+(or	(up-compare-goal drushmicro != no)
+(or	(up-compare-goal patroldefense != no)
+(or	(up-timer-status patrol-timer != timer-disabled)
+(or	(up-timer-status unit-control-flare-timer2 != timer-disabled)
+(or	(military-population <= 0)
+	(and	(goal scouting yes)
+		(military-population <= 1))))))))
+=>
+	(up-jump-rule 12))
+(defrule
+(or	(strategic-number sn-current-age <= dark)
+(or	(strategic-number sn-maximum-town-size >= 40)
+(or	(military-population >= 41); 51
+(or	(up-compare-goal targetdistance < 36); 45
+(or	(up-enemy-units-in-town >= 1); 5
+(or	(up-enemy-villagers-in-town >= 1)
+(or	(enemy-buildings-in-town)
+	(town-under-attack))))))))
+=>
+	(up-jump-rule 11))
+(defrule
+	(true)
+=>
+	(up-full-reset-search)
+	(up-set-target-point position-self-x)
+	(up-modify-goal temporary-goal s:= sn-maximum-town-size)
+	(up-modify-goal temporary-goal c:+ 4)
+	(up-modify-goal temporary-goal c:max 20); 24
+	(up-modify-goal temporary-goal c:min 40); 48
+	(up-modify-goal temporary-goal g:min targetdistance)
+	(up-filter-distance c: -1 g: temporary-goal)
+	(set-goal temporary-goal 0)
+	(set-goal temporary-goal2 6)
+	(set-goal temporary-goal3 2); 1
+	(up-find-local c: watch-tower c: 8)
+	(up-find-local c: blacksmith c: 2)
+	(up-find-local c: siege-workshop c: 12)
+	(up-find-local c: monastery c: 8))
+(defrule
+	(building-type-count town-center >= 2)
+=>
+	(up-find-local c: town-center c: 8))
+(defrule
+	(true)
+=>
+	(up-find-local c: barracks c: 16)
+	(up-find-local c: archery-range c: 16)
+	(up-find-local c: stable c: 16)
+	(up-find-local c: market c: 8)
+	(up-find-local c: castle c: 8)
+	(up-find-local c: krepost c: 8)
+	(up-find-local c: bombard-tower c: 8)
+	(up-remove-objects search-local object-data-under-attack >= 1))
+(defrule
+	(up-set-target-object search-local c: 0)
+	(players-building-count target-player >= 1)
+=>
+	(up-get-point position-target temporary-point-x)
+	(up-set-target-point temporary-point-x)
+	(up-clean-search search-local object-data-distance search-order-asc)
+	(up-jump-rule 1))
+(defrule
+	(up-set-target-object search-local c: 0)
+=>
+	(up-get-point position-center temporary-point-x)
+	(up-set-target-point temporary-point-x)
+	(up-clean-search search-local object-data-distance search-order-asc)); end jump
+(defrule
+	(up-set-target-object search-local c: 0)
+=>
+	(up-get-object-data object-data-type temporary-goal)
+	(up-get-point position-object point-x))
+(defrule
+(or	(goal temporary-goal krepost)
+(or	(goal temporary-goal blacksmith)
+(or	(goal temporary-goal monastery)
+(or	(goal temporary-goal barracks)
+(or	(goal temporary-goal archery-range)
+	(goal temporary-goal stable))))))
+=>
+	(set-goal temporary-goal2 8)
+	(set-goal temporary-goal3 3))
+(defrule
+(or	(goal temporary-goal market)
+(or	(goal temporary-goal siege-workshop)
+(or	(goal temporary-goal town-center)
+	(goal temporary-goal castle))))
+=>
+	(set-goal temporary-goal2 9)
+	(set-goal temporary-goal3 4))
+(defrule
+	(up-set-target-object search-local c: 0)
+=>
+	(up-full-reset-search)
+	(up-lerp-tiles point-x position-self-x g: temporary-goal3)
+	(up-set-target-point point-x)
+	(up-filter-distance g: temporary-goal2 c: -1)
+	(up-filter-include cmdid-military -1 -1 -1)
+	(up-filter-exclude -1 -1 orderid-explore warship-class)
+	(up-find-local c: all-units-class c: 240)
+	(up-remove-objects search-local object-data-action == actionid-attack)
+	(up-target-point null-x action-move -1 -1)
+	(up-target-point 0 action-move -1 -1)
+	(enable-timer group-timer 16))
+(defrule
+	(up-timer-status group-timer == timer-running)
+	(up-compare-goal navycount >= 1)
+	(building-type-count dock >= 1)
+=>
+	(up-retreat-to dock c: warship-class)
+	(up-jump-rule 1))
+(defrule
+	(up-timer-status group-timer != timer-running)
+	(up-compare-goal navycount >= 1)
+	(building-type-count dock >= 1)
+=>
+	(up-retreat-to dock c: warship-class)
+	(enable-timer group-timer 16)); end jump
+;==============================================================
+(defrule
+(or	(goal enemy-goal trush)
+(or	(players-unit-type-count target-player 124 >= 1)
+	(players-unit-type-count target-player 220 >= 1)))
+	(up-compare-goal focus-mpop <= 1)
+	(players-current-age focus-player == feudal-age)
+	(players-current-age-time target-player < 60)
+	(current-age <= feudal-age)
+	(strategic-number sn-current-age <= fcastlea)
+	(up-projectile-detected projectile-any >= 30000)
+	(up-compare-goal gl-threat-time >= 30000)
+	(players-building-type-count target-player watch-tower <= 0)
+=>
+	(set-goal gatherinside 0)
+	(set-strategic-number sn-task-ungrouped-soldiers 1)
+	(enable-timer spread 30))
+(defrule
+	(up-timer-status spread != timer-running)
+	(military-population >= 9)
+=>
+	(enable-timer spread 2)
+	(disable-self))
+(defrule
+	(up-timer-status group-timer == timer-running)
+	(up-timer-status spread == timer-running)
+=>
+	(up-get-timer c: spread temporary-goal)
+	(up-modify-goal temporary-goal c:max 0)
+	(up-modify-goal temporary-goal c:/ 1000)
+	(up-get-fact game-time 0 temporary-goal2)
+	(up-modify-goal temporary-goal g:- temporary-goal2)
+	(up-modify-goal temporary-goal c:max 8)
+	(up-set-timer c: spread g: temporary-goal))
+;==============================================================
+(defrule
+	(goal spreadunits yes)
+	(goal gatherinside no)
+	(timer-triggered spread)
+=>
+	(disable-timer spread)
+	(set-goal attackprioritychange yes); test
+	(set-strategic-number sn-task-ungrouped-soldiers 0)
+	(set-goal spreadunits no); sn-task-ungrouped-soldiers always 1 as a fact
+	(enable-timer spread 180))
+;==============================================================
+(defrule
+	(goal spreadunits no)
+	(goal gatherinside no)
+	(timer-triggered spread)
+=>
+	(disable-timer spread)
+	(set-strategic-number sn-task-ungrouped-soldiers 1)
+	(set-goal spreadunits yes)
+	(enable-timer spread 1)); 3^
+;==============================================================
+(defrule
+	(up-timer-status group-timer == timer-running)
+=>
+	(set-strategic-number sn-gather-defense-units 0))

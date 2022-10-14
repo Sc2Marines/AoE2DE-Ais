@@ -1,0 +1,924 @@
+;====================================================================================================
+;-------------------------------------defconst & goal------------------------------------------------
+;====================================================================================================
+
+(defconst gl_en_scout 101)     ;counter (siege),(infantry except spearmen)
+(defconst gl_en_archer 102)    ;counter (infantry except skirmisher)
+(defconst gl_en_spearman 103)  ;counter (cavalry),(siege)
+(defconst gl_en_swordsman 104) ;counter (siege),(infantry except swordsman)
+(defconst gl_en_knight 105)    ;counter (siege),(infantry except spearmen),(calvary except knight and horse archer and camel)
+(defconst gl_en_eagle 106)     ;counter (siege)
+(defconst gl_en_siege 107)     
+(defconst gl_en_cavalery-archer 108) ;counter (cavalry except camel)
+(defconst gl_en_hand-canonner 109)   ;counter (infantry except skirmisher and archer)
+(defconst gl_en_camel 110)           ;counter (siege),(cavalry except camel)
+(defconst gl_en_steppe-lancer 111)   ;counter (siege),(cavalry except camel and steppe-lancer),(infantry except spearmen)
+(defconst gl_en_battle-elephant 112) ;counter (siege),(cavalry except camel and battle-elephant),(infantry except spearmen)
+(defconst gl_en_skirmisher 113)      ;counter (infantry except skirmisher and swordsman and eagle)
+
+(defrule
+(true)
+=>
+(set-goal gl_en_scout 0)
+(set-goal gl_en_archer 0)
+(set-goal gl_en_spearman 0)
+(set-goal gl_en_swordsman 0)
+(set-goal gl_en_knight 0)
+(set-goal gl_en_eagle 0)
+(set-goal gl_en_siege 0)
+(set-goal gl_en_cavalery-archer 0)
+(set-goal gl_en_hand-canonner 0)
+(set-goal gl_en_camel 0)
+(set-goal gl_en_steppe-lancer 0)
+(set-goal gl_en_battle-elephant 0)
+(set-goal gl_en_skirmisher 0)
+)
+
+;ennemy army composition
+;unit type
+(defconst gl_en_cav 200)
+(defconst gl_en_inf 201)
+(defconst gl_en_siege 202)
+;army mix
+(defconst gl_mix_cav_inf 203)
+(defconst gl_mix_cav_siege 204)
+(defconst gl_mix_inf_siege 205)
+(defconst gl_mix_cav_inf_siege 206)
+;unit counter what
+;cav
+(defconst gl_cav_anti_inf 207)
+(defconst gl_cav_anti_siege 208)
+(defconst gl_cav_anti_cav 209)
+;inf
+(defconst gl_inf_anti_cav 210)
+(defconst gl_inf_anti_siege 211)
+(defconst gl_inf_anti_inf 212)
+;siege
+(defconst gl_siege_anti_cav 213)
+(defconst gl_siege_anti_inf 214)
+(defconst gl_siege_anti_siege 215)
+
+(defrule
+(true)
+=>
+(set-goal gl_en_cav 0)
+(set-goal gl_en_inf 0)
+(set-goal gl_en_siege 0)
+(set-goal gl_mix_cav_inf 0)
+(set-goal gl_mix_cav_siege 0)
+(set-goal gl_mix_inf_siege 0)
+(set-goal gl_mix_cav_inf_siege 0)
+(set-goal gl_cav_anti_inf 0)
+(set-goal gl_cav_anti_siege 0)
+(set-goal gl_cav_anti_cav 0)
+(set-goal gl_inf_anti_cav 0)
+(set-goal gl_inf_anti_siege 0)
+(set-goal gl_inf_anti_inf 0)
+(set-goal gl_siege_anti_cav 0)
+(set-goal gl_siege_anti_inf 0)
+(set-goal gl_siege_anti_siege 0)
+)
+
+
+;====================================================================================================
+;-------------------------------------making ennemy composition system-------------------------------
+;====================================================================================================
+
+;gl_en_cav => for avery cav unit, increment gl_en_cav by 1
+(defrule
+(or
+(up-compare-goal gl_en_scout > 0)
+    (or
+        (up-compare-goal gl_en_knight > 0)
+            (or
+                (up-compare-goal gl_en_cavalery-archer > 0)
+                    (or
+                    
+                        (up-compare-goal gl_en_camel > 0)
+                            (or
+                                (up-compare-goal gl_en_steppe-lancer > 0)
+                                (up-compare-goal gl_en_battle-elephant > 0)
+                            )
+                    
+                    )
+            )
+    )
+)
+=>
+(up-modify-goal gl_en_cav g:+ 1)
+)
+
+;gl_en_inf => for avery inf unit, increment gl_en_inf by 1
+(defrule
+(or
+(up-compare-goal gl_en_archer > 0)
+    (or
+        (up-compare-goal gl_en_spearman > 0)
+            (or
+                (up-compare-goal gl_en_swordsman > 0)
+                    (or
+                        (up-compare-goal gl_en_eagle > 0)
+                            (or
+                                (up-compare-goal gl_en_hand-canonner > 0)
+                                (up-compare-goal gl_en_skirmisher > 0)
+                            )
+                    )
+            )
+    )
+)
+=>
+(up-modify-goal gl_en_inf g:+ 1)
+)
+
+;gl_en_siege => for avery siege unit, increment gl_en_siege by 1
+(defrule
+(up-compare-goal gl_en_siege > 0)
+=>
+(up-modify-goal gl_en_siege g:+ 1)
+)
+
+;add more wheight in function of the number of units
+
+;cav
+(defrule
+(up_up-compare-goal gl_en_cav > 0)
+=>
+(up-modify-goal gl_en_cav g:+ gl_en_scout)
+(up-modify-goal gl_en_cav g:+ gl_en_knight)
+(up-modify-goal gl_en_cav g:+ gl_en_cavalery-archer)
+(up-modify-goal gl_en_cav g:+ gl_en_camel)
+(up-modify-goal gl_en_cav g:+ gl_en_steppe-lancer)
+(up-modify-goal gl_en_cav g:+ gl_en_battle-elephant)
+)
+
+;inf
+(defrule
+(up_up-compare-goal gl_en_inf > 0)
+=>
+(up-modify-goal gl_en_inf g:+ gl_en_archer)
+(up-modify-goal gl_en_inf g:+ gl_en_spearman)
+(up-modify-goal gl_en_inf g:+ gl_en_swordsman)
+(up-modify-goal gl_en_inf g:+ gl_en_eagle)
+(up-modify-goal gl_en_inf g:+ gl_en_hand-canonner)
+(up-modify-goal gl_en_inf g:+ gl_en_skirmisher)
+)
+
+;siege
+(defrule
+(up-compare-goal gl_en_siege > 0)
+=>
+(up-modify-goal gl_en_siege g:+ gl_en_siege)
+)
+
+;====================================================================================================
+;--------------------------------training system to counter ennemy composition-----------------------
+;====================================================================================================
+
+;we use the counter rules defined in the "goal & counter" section
+
+;ennemy army is only cavalry
+;spearman
+(defrule
+(up-compare-goal gl_en_cav g:> 0)
+(up-compare-goal gl_en_inf g:= 0)
+(up-compare-goal gl_en_siege g:= 0)
+(can-train spearman-line)
+(unit-type-count spearman-line < gl_en_cav)
+=>
+(train spearman-line)
+)
+
+;camel-line
+(defrule
+(up-compare-goal gl_en_cav g:> 0)
+(up-compare-goal gl_en_inf g:= 0)
+(up-compare-goal gl_en_siege g:= 0)
+(not(can-train spearman-line))
+(can-train camel-line)
+(unit-type-count camel-line < gl_en_cav)
+=>
+(train camel-line)
+)
+
+;cavalery-archer
+(defrule
+(up-compare-goal gl_en_cav g:> 0)
+(up-compare-goal gl_en_inf g:= 0)
+(up-compare-goal gl_en_siege g:= 0)
+(not(can-train spearman-line))
+(not(can-train camel-line))
+(can-train cavalry-archer-line)
+(unit-type-count cavalry-archer-line < gl_en_cav)
+=>
+(train cavalry-archer-line)
+)
+
+;nothing
+(defrule
+(up-compare-goal gl_en_cav g:> 0)
+(up-compare-goal gl_en_inf g:= 0)
+(up-compare-goal gl_en_siege g:= 0)
+(not(can-train spearman-line))
+(not(can-train camel-line))
+(not(can-train cavalry-archer-line))
+=>
+(chat-to-enemies "Arg I can't train any unit to counter your army")
+)
+
+;ennemy army is only infantry
+
+;knight-line
+(defrule
+(up-compare-goal gl_en_cav g:= 0)
+(up-compare-goal gl_en_inf g:> 0)
+(up-compare-goal gl_en_siege g:= 0)
+(up-compare-goal gl_en_spearman g:= 0)
+(can-train knight-line)
+(unit-type-count knight-line < gl_en_inf)
+=>
+(train knight-line)
+)
+
+;militia-line
+(defrule
+(up-compare-goal gl_en_cav g:= 0)
+(up-compare-goal gl_en_inf g:> 0)
+(up-compare-goal gl_en_siege g:= 0)
+(up-compare-goal gl_en_hand-cannoneer g:= 0)
+(up-compare-goal gl_en_archer g:= 0)
+(or
+    (up-compare-goal gl_en_spearman g:> 0)
+    (or
+        (up-compare-goal gl_en_eagle g:> 0)
+        (up-compare-goal gl_en_skirmisher g:> 0)
+    )
+)
+(can-train militiaman-line)
+(unit-type-count militiaman-line < gl_en_inf)
+=>
+(train militiaman-line)
+)
+
+;archer-line
+(defrule
+(up-compare-goal gl_en_cav g:= 0)
+(up-compare-goal gl_en_inf g:> 0)
+(up-compare-goal gl_en_siege g:= 0)
+(up-compare-goal gl_en_skirmisher g:= 0)
+(up-compare-goal gl_en_swordsman g:= 0)
+(or
+    (up-compare-goal gl_en_spearman g:> 0)
+    (up-compare-goal gl_en_skirmisher g:> 0)
+)
+(can-train archer-line)
+(unit-type-count archer-line < gl_en_inf)
+=>
+(train archer-line)
+)
+
+
+
+;skirmisher-line
+(defrule
+(up-compare-goal gl_en_cav g:= 0)
+(up-compare-goal gl_en_inf g:> 0)
+(up-compare-goal gl_en_siege g:= 0)
+(or
+    (up-compare-goal gl_en_archer g:> 0)
+    (up-compare-goal gl_en_hand-cannoneer g:> 0)
+)
+(up-compare-goal gl_en_swordsman g:= 0)
+(up-compare-goal gl_en_eagle g:= 0)
+(can-train skirmisher-line)
+(unit-type-count skirmisher-line < gl_en_inf)
+=>
+(train skirmisher-line)
+)
+
+;ennemy army is only siege
+;knight line
+(defrule
+(up-compare-goal gl_en_cav g:= 0)
+(up-compare-goal gl_en_inf g:= 0)
+(up-compare-goal gl_en_siege g:> 0)
+(can-train knight-line)
+(unit-type-count knight-line < gl_en_siege)
+=>
+(train siege-line)
+)
+
+;swordsmen line
+(defrule
+(up-compare-goal gl_en_cav g:= 0)
+(up-compare-goal gl_en_inf g:= 0)
+(up-compare-goal gl_en_siege g:> 0)
+(not(can-train knight-line))
+(can-train militiaman-line)
+(unit-type-count militiaman-line < gl_en_siege)
+=>
+(train militiaman-line)
+)
+
+;scout line
+(defrule
+(up-compare-goal gl_en_cav g:= 0)
+(up-compare-goal gl_en_inf g:= 0)
+(up-compare-goal gl_en_siege g:> 0)
+(not(can-train knight-line))
+(not(can-train militiaman-line))
+(can-train scout-line)
+(unit-type-count scout-line < gl_en_siege)
+=>
+(train scout-line)
+)
+
+;spearmen line
+(defrule
+(up-compare-goal gl_en_cav g:= 0)
+(up-compare-goal gl_en_inf g:= 0)
+(up-compare-goal gl_en_siege g:> 0)
+(not(can-train knight-line))
+(not(can-train militiaman-line))
+(not(can-train scout-line))
+(can-train spearman-line)
+(unit-type-count spearman-line < gl_en_siege)
+=>
+(train spearman-line)
+)
+
+;eagle line
+(defrule
+(up-compare-goal gl_en_cav g:= 0)
+(up-compare-goal gl_en_inf g:= 0)
+(up-compare-goal gl_en_siege g:> 0)
+(not(can-train knight-line))
+(not(can-train militiaman-line))
+(not(can-train scout-line))
+(not(can-train spearman-line))
+(can-train eagle-warrior-line)
+(unit-type-count eagle-warrior-line < gl_en_siege)
+=>
+(train eagle-warrior-line)
+)
+
+;nothing
+(defrule
+(up-compare-goal gl_en_cav g:= 0)
+(up-compare-goal gl_en_inf g:= 0)
+(up-compare-goal gl_en_siege g:> 0)
+(not(can-train knight-line))
+(not(can-train militiaman-line))
+(not(can-train scout-line))
+(not(can-train spearman-line))
+(not(can-train eagle-warrior-line))
+=>
+(chat-to-enemies "Arg I can't train any unit to counter your army")
+)
+
+;====================================================================================================
+;-------------------------------------ennemy unit number detection-----------------------------------
+;====================================================================================================
+
+;scout 5
+(defrule
+(players-unit-type-count 2 scout-cavalry-line >= 5)
+=>
+(set-goal gl_en_scout 5)
+)
+
+;scout 10
+(defrule
+(players-unit-type-count 2 scout-cavalry-line >= 10)
+=>
+(set-goal gl_en_scout 10)
+)
+
+;scout 15
+(defrule
+(players-unit-type-count 2 scout-cavalry-line >= 15)
+=>
+(set-goal gl_en_scout 15)
+)
+
+;scout 20
+(defrule
+(players-unit-type-count 2 scout-cavalry-line >= 20)
+=>
+(set-goal gl_en_scout 20)
+)
+
+;scout 30
+(defrule
+(players-unit-type-count 2 scout-cavalry-line >= 30)
+=>
+(set-goal gl_en_scout 30)
+)
+
+;scout 50
+(defrule
+(players-unit-type-count 2 scout-cavalry-line >= 50)
+=>
+(set-goal gl_en_scout 50)
+)
+
+;archer 5
+(defrule
+(players-unit-type-count 2 archer-line >= 5)
+=>
+(set-goal gl_en_archer 5)
+)
+
+;archer 10
+(defrule
+(players-unit-type-count 2 archer-line >= 10)
+=>
+(set-goal gl_en_archer 10)
+)
+
+;archer 15
+(defrule
+(players-unit-type-count 2 archer-line >= 15)
+=>
+(set-goal gl_en_archer 15)
+)
+
+;archer 20
+(defrule
+(players-unit-type-count 2 archer-line >= 20)
+=>
+(set-goal gl_en_archer 20)
+)
+
+;archer 30
+(defrule
+(players-unit-type-count 2 archer-line >= 30)
+=>
+(set-goal gl_en_archer 30)
+)
+
+;archer 50
+(defrule
+(players-unit-type-count 2 archer-line >= 50)
+=>
+(set-goal gl_en_archer 50)
+)
+
+;spearman 5
+(defrule
+(players-unit-type-count 2 spearman-line >= 5)
+=>
+(set-goal gl_en_spearman 5)
+)
+
+;spearman 10
+(defrule
+(players-unit-type-count 2 spearman-line >= 10)
+=>
+(set-goal gl_en_spearman 10)
+)
+
+;spearman 15
+(defrule
+(players-unit-type-count 2 spearman-line >= 15)
+=>
+(set-goal gl_en_spearman 15)
+)
+
+;spearman 20
+(defrule
+(players-unit-type-count 2 spearman-line >= 20)
+=>
+(set-goal gl_en_spearman 20)
+)
+
+;spearman 30
+(defrule
+(players-unit-type-count 2 spearman-line >= 30)
+=>
+(set-goal gl_en_spearman 30)
+)
+
+;spearman 50
+(defrule
+(players-unit-type-count 2 spearman-line >= 50)
+=>
+(set-goal gl_en_spearman 50)
+)
+
+;swordsman 5
+(defrule
+(players-unit-type-count 2 militiaman-line >= 5)
+=>
+(set-goal gl_en_swordsman 5)
+)
+
+;swordsman 10
+(defrule
+(players-unit-type-count 2 militiaman-line >= 10)
+=>
+(set-goal gl_en_swordsman 10)
+)
+
+;swordsman 15
+(defrule
+(players-unit-type-count 2 militiaman-line >= 15)
+=>
+(set-goal gl_en_swordsman 15)
+)
+
+;swordsman 20
+(defrule
+(players-unit-type-count 2 militiaman-line >= 20)
+=>
+(set-goal gl_en_swordsman 20)
+)
+
+;swordsman 30
+(defrule
+(players-unit-type-count 2 militiaman-line >= 30)
+=>
+(set-goal gl_en_swordsman 30)
+)
+
+;swordsman 50
+(defrule
+(players-unit-type-count 2 militiaman-line >= 50)
+=>
+(set-goal gl_en_swordsman 50)
+)
+
+;knight 5
+(defrule
+(players-unit-type-count 2 knight-line >= 5)
+=>
+(set-goal gl_en_knight 5)
+)
+
+;knight 10
+(defrule
+(players-unit-type-count 2 knight-line >= 10)
+=>
+(set-goal gl_en_knight 10)
+)
+
+;knight 15
+(defrule
+(players-unit-type-count 2 knight-line >= 15)
+=>
+(set-goal gl_en_knight 15)
+)
+
+;knight 20
+(defrule
+(players-unit-type-count 2 knight-line >= 20)
+=>
+(set-goal gl_en_knight 20)
+)
+
+;knight 30
+(defrule
+(players-unit-type-count 2 knight-line >= 30)
+=>
+(set-goal gl_en_knight 30)
+)
+
+;knight 50
+(defrule
+(players-unit-type-count 2 knight-line >= 50)
+=>
+(set-goal gl_en_knight 50)
+)
+
+;eagle 5
+(defrule
+(players-unit-type-count 2 eagle-warrior-line >= 5)
+=>
+(set-goal gl_en_eagle 5)
+)
+
+;eagle 10
+(defrule
+(players-unit-type-count 2 eagle-warrior-line >= 10)
+=>
+(set-goal gl_en_eagle 10)
+)
+
+;eagle 15
+(defrule
+(players-unit-type-count 2 eagle-warrior-line >= 15)
+=>  
+(set-goal gl_en_eagle 15)
+)
+
+;eagle 20
+(defrule
+(players-unit-type-count 2 eagle-warrior-line >= 20)
+=>
+(set-goal gl_en_eagle 20)
+)
+
+;eagle 30
+(defrule
+(players-unit-type-count 2 eagle-warrior-line >= 30)
+=>
+(set-goal gl_en_eagle 30)
+)
+
+;eagle 50
+(defrule
+(players-unit-type-count 2 eagle-warrior-line >= 50)
+=>
+(set-goal gl_en_eagle 50)
+)
+
+;siege 5
+(defrule
+(or
+    (players-unit-type-count 2 battering-ram-line >= 5)
+    (or
+        (players-unit-type-count 2 mangonel-line >= 5)
+        (players-unit-type-count 2 scorpion-line >= 5)
+    )
+)
+=>
+(set-goal gl_en_siege 5)
+)
+
+;siege 10
+(defrule
+(or
+    (players-unit-type-count 2 battering-ram-line >= 10)
+    (or
+        (players-unit-type-count 2 mangonel-line >= 10)
+        (players-unit-type-count 2 scorpion-line >= 10)
+    )
+)
+=>
+(set-goal gl_en_siege 10)
+)
+
+;siege 15
+(defrule
+(or
+    (players-unit-type-count 2 battering-ram-line >= 15)
+    (or
+        (players-unit-type-count 2 mangonel-line >= 15)
+        (players-unit-type-count 2 scorpion-line >= 15)
+    )
+)
+=>
+(set-goal gl_en_siege 15)
+)
+
+;siege 20
+(defrule
+(or
+    (players-unit-type-count 2 battering-ram-line >= 20)
+    (or
+        (players-unit-type-count 2 mangonel-line >= 20)
+        (players-unit-type-count 2 scorpion-line >= 20)
+    )
+)
+=>
+(set-goal gl_en_siege 20)
+)
+
+;siege 30
+(defrule
+(or
+    (players-unit-type-count 2 battering-ram-line >= 30)
+    (or
+        (players-unit-type-count 2 mangonel-line >= 30)
+        (players-unit-type-count 2 scorpion-line >= 30)
+    )
+)
+=>
+(set-goal gl_en_siege 30)
+)
+
+;siege 50
+(defrule
+(or
+    (players-unit-type-count 2 battering-ram-line >= 50)
+    (or
+        (players-unit-type-count 2 mangonel-line >= 50)
+        (players-unit-type-count 2 scorpion-line >= 50)
+    )
+)
+=>
+(set-goal gl_en_siege 50)
+)
+
+;cavalery-archer 5
+(defrule
+(players-unit-type-count 2 cavalry-archer-line >= 5)
+=>
+(set-goal gl_en_cavalery-archer 5)
+)
+
+;cavalery-archer 10
+(defrule
+(players-unit-type-count 2 cavalry-archer-line >= 10)
+=>
+(set-goal gl_en_cavalery-archer 10)
+)
+
+;cavalery-archer 15
+(defrule
+(players-unit-type-count 2 cavalry-archer-line >= 15)
+=>
+(set-goal gl_en_cavalery-archer 15)
+)
+
+;cavalery-archer 20
+(defrule
+(players-unit-type-count 2 cavalry-archer-line >= 20)
+=>
+(set-goal gl_en_cavalery-archer 20)
+)
+
+;cavalery-archer 30
+(defrule
+(players-unit-type-count 2 cavalry-archer-line >= 30)
+=>
+(set-goal gl_en_cavalery-archer 30)
+)
+
+;cavalery-archer 50
+(defrule
+(players-unit-type-count 2 cavalry-archer-line >= 50)
+=>
+(set-goal gl_en_cavalery-archer 50)
+)
+
+;gl_en_hand-canonner 5
+(defrule
+(players-unit-type-count 2 hand-cannoneer >= 5)
+=>
+(set-goal gl_en_hand-canonner 5)
+)
+
+;gl_en_hand-canonner 10
+(defrule
+(players-unit-type-count 2 hand-cannoneer >= 10)
+=>
+(set-goal gl_en_hand-canonner 10)
+)
+
+;gl_en_hand-canonner 15
+(defrule
+(players-unit-type-count 2 hand-cannoneer >= 15)
+=>
+(set-goal gl_en_hand-canonner 15)
+)
+
+;gl_en_hand-canonner 20
+(defrule
+(players-unit-type-count 2 hand-cannoneer >= 20)
+=>
+(set-goal gl_en_hand-canonner 20)
+)
+
+;gl_en_hand-canonner 30
+(defrule
+(players-unit-type-count 2 hand-cannoneer >= 30)
+=>
+(set-goal gl_en_hand-canonner 30)
+)
+
+;gl_en_hand-canonner 50
+(defrule
+(players-unit-type-count 2 hand-cannoneer >= 50)
+=>
+(set-goal gl_en_hand-canonner 50)
+)
+
+;gl_en_camel 5
+(defrule
+(players-unit-type-count 2 camel-line >= 5)
+=>
+(set-goal gl_en_camel 5)
+)
+
+;gl_en_camel 10
+(defrule
+(players-unit-type-count 2 camel-line >= 10)
+=>
+(set-goal gl_en_camel 10)
+)
+
+;gl_en_camel 15
+(defrule
+(players-unit-type-count 2 camel-line >= 15)
+=>
+(set-goal gl_en_camel 15)
+)
+
+;gl_en_camel 20
+(defrule
+(players-unit-type-count 2 camel-line >= 20)
+=>
+(set-goal gl_en_camel 20)
+)
+
+;gl_en_camel 30
+(defrule
+(players-unit-type-count 2 camel-line >= 30)
+=>
+(set-goal gl_en_camel 30)
+)
+
+;gl_en_camel 50
+(defrule
+(players-unit-type-count 2 camel-line >= 50)
+=>
+(set-goal gl_en_camel 50)
+)
+
+;gl_en_steppe-lancer 5
+(defrule
+(players-unit-type-count 2 steppe-lancer-line >= 5)
+=>
+(set-goal gl_en_steppe-lancer 5)
+)
+
+;gl_en_steppe-lancer 10
+(defrule
+(players-unit-type-count 2 steppe-lancer-line >= 10)
+=>
+(set-goal gl_en_steppe-lancer 10)
+)
+
+;gl_en_steppe-lancer 15
+(defrule
+(players-unit-type-count 2 steppe-lancer-line >= 15)
+=>
+(set-goal gl_en_steppe-lancer 15)
+)
+
+;gl_en_steppe-lancer 20
+(defrule
+(players-unit-type-count 2 steppe-lancer-line >= 20)
+=>
+(set-goal gl_en_steppe-lancer 20)
+)
+
+;gl_en_steppe-lancer 30
+(defrule
+(players-unit-type-count 2 steppe-lancer-line >= 30)
+=>
+(set-goal gl_en_steppe-lancer 30)
+)
+
+;gl_en_steppe-lancer 50
+(defrule
+(players-unit-type-count 2 steppe-lancer-line >= 50)
+=>
+(set-goal gl_en_steppe-lancer 50)
+)
+
+
+
+
+
+;gl_en_battle-elephant 5
+(defrule
+(players-unit-type-count 2 battle-elephant-line >= 5)
+=>
+(set-goal gl_en_battle-elephant 5)
+)
+
+;gl_en_battle-elephant 10
+(defrule
+(players-unit-type-count 2 battle-elephant-line >= 10)
+=>
+(set-goal gl_en_battle-elephant 10)
+)
+
+;gl_en_battle-elephant 15
+(defrule
+(players-unit-type-count 2 battle-elephant-line >= 15)
+=>
+(set-goal gl_en_battle-elephant 15)
+)
+
+;gl_en_battle-elephant 20
+(defrule
+(players-unit-type-count 2 battle-elephant-line >= 20)
+=>
+(set-goal gl_en_battle-elephant 20)
+)
+
+;gl_en_battle-elephant 30
+(defrule
+(players-unit-type-count 2 battle-elephant-line >= 30)
+=>
+(set-goal gl_en_battle-elephant 30)
+)
+
+;gl_en_battle-elephant 50
+(defrule
+(players-unit-type-count 2 battle-elephant-line >= 50)
+=>
+(set-goal gl_en_battle-elephant 50)
+)

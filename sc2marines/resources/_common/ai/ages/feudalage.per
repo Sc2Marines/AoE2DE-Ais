@@ -1,0 +1,161 @@
+;AGE FEODAL
+
+;pourcentages
+(defrule
+(current-age == feudal-age)
+=>
+(set-strategic-number sn-food-gatherer-percentage 40)
+(set-strategic-number sn-wood-gatherer-percentage 40)
+(chat-local-to-self "40% des vill vont au bois")
+(chat-local-to-self "40% des vill vont au food")
+(disable-self)
+)
+
+;double axe
+(defrule
+(current-age == feudal-age)
+(research-available ri-double-bit-axe)
+=>
+(research ri-double-bit-axe)
+)
+
+;gold mining
+(defrule
+(current-age == feudal-age)
+(research-available ri-gold-mining)
+=>
+(research ri-gold-mining)
+)
+
+;stone mining
+(defrule
+(current-age == feudal-age)
+(research-available ri-stone-mining)
+=>
+(research ri-stone-mining)
+)
+
+;gold
+(defrule
+(current-age == feudal-age)
+(can-build mining-camp)
+(resource-found gold)
+(building-type-count mining-camp < 1)
+=>
+(build mining-camp)
+(set-strategic-number sn-gold-gatherer-percentage 10)
+(chat-local-to-self "10% des vill vont au gold")
+)
+
+;stone
+(defrule
+(current-age == feudal-age)
+(can-build mining-camp)
+(resource-found stone)
+(building-type-count mining-camp < 2 )
+=>
+(build mining-camp)
+(set-strategic-number sn-stone-gatherer-percentage 5)
+(chat-local-to-self "5% des vill vont au stone")
+)
+
+;lumber camps
+(defrule
+(current-age == feudal-age)
+(can-build lumber-camp)
+(building-type-count lumber-camp < 3)
+(resource-found wood)
+=>
+(build lumber-camp)
+)
+
+;farm
+(defrule
+(current-age == feudal-age)
+(can-build farm)
+(building-type-count lumber-camp > 2)
+(building-type-count farm < 15)
+=>
+(build farm)
+)
+
+;villager
+(defrule
+(current-age == feudal-age)
+(unit-type-count villager < 30)
+(can-train villager)
+=>
+(train villager)
+)
+
+;archery range
+(defrule
+(current-age == feudal-age)
+(unit-type-count archery-range < 2)
+(can-build archery-range)
+=>
+(build archery-range)
+)
+
+;blacksmith
+(defrule
+(current-age == feudal-age)
+(unit-type-count blacksmith < 1)
+(can-build blacksmith)
+=>
+(build blacksmith)
+)
+
+;ri-loom
+(defrule
+(current-age == feudal-age)
+(research-available ri-loom)
+=>
+(research ri-loom)
+)
+
+;ri-fletching
+(defrule
+(research-available ri-fletching)
+=>
+(research ri-fletching)
+)
+
+;ri-padded archer armor
+(defrule
+(research-available ri-padded-archer-armor)
+=>
+(research ri-padded-archer-armor)
+)
+
+;units archer
+(defrule
+(current-age == feudal-age)
+(unit-type-count villager >= 20)
+(building-type-count archery-range >= 1)
+(can-train archer)
+(unit-type-count archer < 10)
+=>
+(train archer)
+)
+
+;attaque
+(defrule
+(current-age == feudal-age)
+(unit-type-count archer >= 10)
+=>
+(attack-now)
+)
+
+(defrule
+(can-research castle-age)
+=> 
+(research castle-age)
+)
+
+;defense
+(defrule
+(true)
+=>
+(goal nbrunitmilit military-population)
+)
