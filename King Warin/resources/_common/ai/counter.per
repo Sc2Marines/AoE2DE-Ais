@@ -799,12 +799,242 @@
 (set-goal gl_train_skirmisher 1)
 )
 
-;rendu la
-
-;test
+;COUNTER SCOUT RULES================================================================================================
 
 
+;5----------------------------------------------------------------------------------------------------------------
 
+;spearmen
+
+(defrule
+(current-age == feudal-age)
+(goal gl_en_scout 1)
+(can-train spearman-line)
+(unit-type-count spearman-line < 5)
+=>
+(train spearman-line )
+(set-goal gl_train_spearman 1)
+)
+
+
+(defrule
+(current-age > feudal-age)
+(goal gl_en_scout 1)
+(or
+    (not (research-completed ri-pikeman))
+    (up-research-status ri-pikeman >= research-pending)
+)
+(can-train spearman-line)
+(unit-type-count spearman-line < 5)
+=>
+(train spearman-line )
+(set-goal gl_train_spearman 1)
+)
+
+(defrule
+(current-age > castle-age)
+(goal gl_en_scout 1)
+(or
+    (not (research-completed ri-halberdier))
+    (up-research-status ri-halberdier >= research-pending)
+)
+(can-train spearman-line)
+(unit-type-count spearman-line < 5)
+=>
+(train spearman-line )
+(set-goal gl_train_spearman 1)
+)
+
+;eagle
+(defrule
+(current-age == feudal-age)
+(goal gl_en_scout 1)
+(goal gl_train_spearman 0)
+(can-train eagle)
+(unit-type-count eagle < 5)
+=>
+(train eagle )
+(set-goal gl_train_eagle 1)
+)
+
+(defrule
+(current-age > feudal-age)
+(goal gl_en_scout 1)
+(goal gl_train_spearman 0)
+(or 
+    (not (research-completed ri-eagle-warrior))
+    (up-research-status ri-eagle-warrior >= research-pending)
+)
+(can-train eagle-warrior)
+(unit-type-count eagle-warrior < 5)
+=>
+(train eagle-warrior )
+(set-goal gl_train_eagle 1)
+)
+
+(defrule
+(current-age > castle-age)
+(goal gl_en_scout 1)
+(goal gl_train_spearman 0)
+(or 
+    (not (research-completed ri-elite-eagle-warrior))
+    (up-research-status ri-elite-eagle-warrior >= research-pending)
+)
+(can-train eagle-warrior)
+(unit-type-count eagle-warrior < 5)
+=>
+(train eagle-warrior )
+(set-goal gl_train_eagle 1)
+)
+
+;camel
+(defrule
+(current-age >= feudal-age)
+(goal gl_en_scout 1)
+(goal gl_train_spearman 0)
+(goal gl_train_eagle 0)
+(can-train camel-line)
+(unit-type-count camel-line < 5)
+=>
+(train camel-line )
+(set-goal gl_train_camel 1)
+)
+
+(defrule
+(current-age >= castle-age)
+(goal gl_en_scout 1)
+(goal gl_train_spearman 0)
+(goal gl_train_eagle 0)
+(or 
+    (not (research-completed ri-heavy-camel))
+    (up-research-status ri-heavy-camel >= research-pending)
+)
+(can-train camel-line)
+(unit-type-count camel-line < 5)
+=>
+(train camel-line )
+(set-goal gl_train_camel 1)
+)
+
+;10----------------------------------------------------------------------------------------------------------------
+
+;spearmen
+(defrule
+(current-age == feudal-age)
+(goal gl_en_scout 1)
+(can-train spearman-line)
+(unit-type-count spearman-line < 10)
+=>
+(train spearman-line )
+(set-goal gl_train_spearman 1)
+)
+
+
+(defrule
+(current-age > feudal-age)
+(goal gl_en_scout 1)
+(goal gl_train_camel 0)
+(or
+    (not (research-completed ri-pikeman))
+    (up-research-status ri-pikeman >= research-pending)
+)
+(can-train spearman-line)
+(unit-type-count spearman-line < 10)
+=>
+(train spearman-line )
+(set-goal gl_train_spearman 1)
+)
+
+(defrule
+(current-age > castle-age)
+(goal gl_en_scout 1)
+(goal gl_train_camel 0)
+(or
+    (not (research-completed ri-halberdier))
+    (up-research-status ri-halberdier >= research-pending)
+)
+(can-train spearman-line)
+(unit-type-count spearman-line < 10)
+=>
+(train spearman-line )
+(set-goal gl_train_spearman 1)
+)
+
+;eagle
+(defrule
+(current-age == feudal-age)
+(goal gl_en_scout 1)
+(goal gl_train_spearman 0)
+(can-train eagle)
+(unit-type-count eagle < 10)
+=>
+(train eagle )
+(set-goal gl_train_eagle 1)
+)
+
+(defrule
+(current-age > feudal-age)
+(goal gl_en_scout 1)
+(goal gl_train_spearman 0)
+(goal gl_train_camel 0)
+(or 
+    (not (research-completed ri-eagle-warrior))
+    (up-research-status ri-eagle-warrior >= research-pending)
+)
+(can-train eagle-warrior)
+(unit-type-count eagle-warrior < 10)
+=>
+(train eagle-warrior )
+(set-goal gl_train_eagle 1)
+)
+
+(defrule
+(current-age > castle-age)
+(goal gl_en_scout 1)
+(goal gl_train_spearman 0)
+(goal gl_train_camel 0)
+(or 
+    (not (research-completed ri-elite-eagle-warrior))
+    (up-research-status ri-elite-eagle-warrior >= research-pending)
+)
+(can-train eagle-warrior)
+(unit-type-count eagle-warrior < 10)
+=>
+(train eagle-warrior )
+(set-goal gl_train_eagle 1)
+)
+
+;camel
+(defrule
+(current-age >= feudal-age)
+(goal gl_en_scout 1)
+(goal gl_train_spearman 0)
+(goal gl_train_eagle 0)
+(can-train camel-line)
+(unit-type-count camel-line < 10)
+=>
+(train camel-line )
+(set-goal gl_train_camel 1)
+)
+
+(defrule
+(current-age >= castle-age)
+(goal gl_en_scout 1)
+(goal gl_train_spearman 0)
+(goal gl_train_eagle 0)
+(or 
+    (not (research-completed ri-heavy-camel))
+    (up-research-status ri-heavy-camel >= research-pending)
+)
+(can-train camel-line)
+(unit-type-count camel-line < 10)
+=>
+(train camel-line )
+(set-goal gl_train_camel 1)
+)
+
+
+;rendu ici
 
 
 
