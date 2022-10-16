@@ -571,7 +571,7 @@
 (goal gl_en_spearman 1)
 (or 
     (not (research-completed ri-man-at-arms))
-    (up-research-status ri-man-at-arms >= research-pending)
+    (up-research-status c: ri-man-at-arms >= research-pending)
 )
 (can-train militiaman-line)
 (unit-type-count militiaman-line < 20)
@@ -585,7 +585,7 @@
 (goal gl_en_spearman 1)
 (or 
     (not (research-completed ri-long-swordsman))
-    (up-research-status ri-long-swordsman >= research-pending)
+    (up-research-status c: ri-long-swordsman >= research-pending)
 )
 (can-train militia-line)
 (unit-type-count militia-line < 20)
@@ -599,7 +599,7 @@
 (goal gl_en_spearman 1)
 (or 
     (not (research-completed ri-two-handed-swordsman))
-    (up-research-status ri-two-handed-swordsman >= research-pending)
+    (up-research-status c: ri-two-handed-swordsman >= research-pending)
 )
 (can-train militia-line)
 (unit-type-count militia-line < 20)
@@ -641,7 +641,7 @@
 (or 
 
     (not (research-completed ri-crossbow))
-    (up-research-status ri-crossbow >= research-pending)
+    (up-research-status c: ri-crossbow >= research-pending)
 )
 (can-train archer-line)
 (unit-type-count archer-line < 20)
@@ -672,7 +672,7 @@
 (goal gl_train_archer 0)
 (or 
     (not (research-completed ri-elite-skirmisher))
-    (up-research-status ri-elite-skirmisher >= research-pending)
+    (up-research-status c: ri-elite-skirmisher >= research-pending)
 )
 (can-train skirmisher-line)
 (unit-type-count skirmisher-line < 20)
@@ -689,7 +689,7 @@
 (goal gl_en_spearman 1)
 (or 
     (not (research-completed ri-man-at-arms))
-    (up-research-status ri-man-at-arms >= research-pending)
+    (up-research-status c: ri-man-at-arms >= research-pending)
 )
 (can-train militiaman-line)
 (unit-type-count militiaman-line < 40)
@@ -703,7 +703,7 @@
 (goal gl_en_spearman 1)
 (or 
     (not (research-completed ri-long-swordsman))
-    (up-research-status ri-long-swordsman >= research-pending)
+    (up-research-status c: ri-long-swordsman >= research-pending)
 )
 (can-train militia-line)
 (unit-type-count militia-line < 40)
@@ -717,7 +717,7 @@
 (goal gl_en_spearman 1)
 (or 
     (not (research-completed ri-two-handed-swordsman))
-    (up-research-status ri-two-handed-swordsman >= research-pending)
+    (up-research-status c: ri-two-handed-swordsman >= research-pending)
 )
 (can-train militia-line)
 (unit-type-count militia-line < 40)
@@ -759,7 +759,7 @@
 (or 
 
     (not (research-completed ri-crossbow))
-    (up-research-status ri-crossbow >= research-pending)
+    (up-research-status c: ri-crossbow >= research-pending)
 )
 (can-train archer-line)
 (unit-type-count archer-line < 40)
@@ -790,7 +790,7 @@
 (goal gl_train_archer 0)
 (or 
     (not (research-completed ri-elite-skirmisher))
-    (up-research-status ri-elite-skirmisher >= research-pending)
+    (up-research-status c: ri-elite-skirmisher >= research-pending)
 )
 (can-train skirmisher-line)
 (unit-type-count skirmisher-line < 40)
@@ -822,7 +822,7 @@
 (goal gl_en_scout 1)
 (or
     (not (research-completed ri-pikeman))
-    (up-research-status ri-pikeman >= research-pending)
+    (up-research-status c: ri-pikeman >= research-pending)
 )
 (can-train spearman-line)
 (unit-type-count spearman-line < 5)
@@ -836,7 +836,7 @@
 (goal gl_en_scout 1)
 (or
     (not (research-completed ri-halberdier))
-    (up-research-status ri-halberdier >= research-pending)
+    (up-research-status c: ri-halberdier >= research-pending)
 )
 (can-train spearman-line)
 (unit-type-count spearman-line < 5)
@@ -863,7 +863,7 @@
 (goal gl_train_spearman 0)
 (or 
     (not (research-completed ri-eagle-warrior))
-    (up-research-status ri-eagle-warrior >= research-pending)
+    (up-research-status c: ri-eagle-warrior >= research-pending)
 )
 (can-train eagle-warrior)
 (unit-type-count eagle-warrior < 5)
@@ -878,7 +878,7 @@
 (goal gl_train_spearman 0)
 (or 
     (not (research-completed ri-elite-eagle-warrior))
-    (up-research-status ri-elite-eagle-warrior >= research-pending)
+    (up-research-status c: ri-elite-eagle-warrior >= research-pending)
 )
 (can-train eagle-warrior)
 (unit-type-count eagle-warrior < 5)
@@ -907,7 +907,7 @@
 (goal gl_train_eagle 0)
 (or 
     (not (research-completed ri-heavy-camel))
-    (up-research-status ri-heavy-camel >= research-pending)
+    (up-research-status c: ri-heavy-camel >= research-pending)
 )
 (can-train camel-line)
 (unit-type-count camel-line < 5)
@@ -936,7 +936,7 @@
 (goal gl_train_camel 0)
 (or
     (not (research-completed ri-pikeman))
-    (up-research-status ri-pikeman >= research-pending)
+    (up-research-status c: ri-pikeman >= research-pending)
 )
 (can-train spearman-line)
 (unit-type-count spearman-line < 10)
@@ -951,7 +951,7 @@
 (goal gl_train_camel 0)
 (or
     (not (research-completed ri-halberdier))
-    (up-research-status ri-halberdier >= research-pending)
+    (up-research-status c: ri-halberdier >= research-pending)
 )
 (can-train spearman-line)
 (unit-type-count spearman-line < 10)
@@ -979,7 +979,7 @@
 (goal gl_train_camel 0)
 (or 
     (not (research-completed ri-eagle-warrior))
-    (up-research-status ri-eagle-warrior >= research-pending)
+    (up-research-status c: ri-eagle-warrior >= research-pending)
 )
 (can-train eagle-warrior)
 (unit-type-count eagle-warrior < 10)
@@ -995,7 +995,7 @@
 (goal gl_train_camel 0)
 (or 
     (not (research-completed ri-elite-eagle-warrior))
-    (up-research-status ri-elite-eagle-warrior >= research-pending)
+    (up-research-status c: ri-elite-eagle-warrior >= research-pending)
 )
 (can-train eagle-warrior)
 (unit-type-count eagle-warrior < 10)
@@ -1024,7 +1024,7 @@
 (goal gl_train_eagle 0)
 (or 
     (not (research-completed ri-heavy-camel))
-    (up-research-status ri-heavy-camel >= research-pending)
+    (up-research-status c: ri-heavy-camel >= research-pending)
 )
 (can-train camel-line)
 (unit-type-count camel-line < 10)
@@ -1053,7 +1053,7 @@
 (goal gl_train_camel 0)
 (or
     (not (research-completed ri-pikeman))
-    (up-research-status ri-pikeman >= research-pending)
+    (up-research-status c: ri-pikeman >= research-pending)
 )
 (can-train spearman-line)
 (unit-type-count spearman-line < 20)
@@ -1069,7 +1069,7 @@
 (goal gl_train_camel 0)
 (or
     (not (research-completed ri-halberdier))
-    (up-research-status ri-halberdier >= research-pending)
+    (up-research-status c: ri-halberdier >= research-pending)
 )
 (can-train spearman-line)
 (unit-type-count spearman-line < 20)
@@ -1097,7 +1097,7 @@
 (goal gl_train_camel 0)
 (or 
     (not (research-completed ri-eagle-warrior))
-    (up-research-status ri-eagle-warrior >= research-pending)
+    (up-research-status c: ri-eagle-warrior >= research-pending)
 )
 (can-train eagle-warrior)
 (unit-type-count eagle-warrior < 20)
@@ -1113,7 +1113,7 @@
 (goal gl_train_camel 0)
 (or 
     (not (research-completed ri-elite-eagle-warrior))
-    (up-research-status ri-elite-eagle-warrior >= research-pending)
+    (up-research-status c: ri-elite-eagle-warrior >= research-pending)
 )
 (can-train eagle-warrior)
 (unit-type-count eagle-warrior < 20)
@@ -1142,7 +1142,7 @@
 (goal gl_train_eagle 0)
 (or 
     (not (research-completed ri-heavy-camel))
-    (up-research-status ri-heavy-camel >= research-pending)
+    (up-research-status c: ri-heavy-camel >= research-pending)
 )
 (can-train camel-line)
 (unit-type-count camel-line < 20)
@@ -1170,7 +1170,7 @@
 (goal gl_train_camel 0)
 (or
     (not (research-completed ri-pikeman))
-    (up-research-status ri-pikeman >= research-pending)
+    (up-research-status c: ri-pikeman >= research-pending)
 )
 (can-train spearman-line)
 (unit-type-count spearman-line < 40)
@@ -1186,7 +1186,7 @@
 (goal gl_train_camel 0)
 (or
     (not (research-completed ri-halberdier))
-    (up-research-status ri-halberdier >= research-pending)
+    (up-research-status c: ri-halberdier >= research-pending)
 )
 (can-train spearman-line)
 (unit-type-count spearman-line < 40)
@@ -1214,7 +1214,7 @@
 (goal gl_train_camel 0)
 (or 
     (not (research-completed ri-eagle-warrior))
-    (up-research-status ri-eagle-warrior >= research-pending)
+    (up-research-status c: ri-eagle-warrior >= research-pending)
 )
 (can-train eagle-warrior)
 (unit-type-count eagle-warrior < 40)
@@ -1230,7 +1230,7 @@
 (goal gl_train_camel 0)
 (or 
     (not (research-completed ri-elite-eagle-warrior))
-    (up-research-status ri-elite-eagle-warrior >= research-pending)
+    (up-research-status c: ri-elite-eagle-warrior >= research-pending)
 )
 (can-train eagle-warrior)
 (unit-type-count eagle-warrior < 40)
@@ -1259,7 +1259,7 @@
 (goal gl_train_eagle 0)
 (or 
     (not (research-completed ri-heavy-camel))
-    (up-research-status ri-heavy-camel >= research-pending)
+    (up-research-status c: ri-heavy-camel >= research-pending)
 )
 (can-train camel-line)
 (unit-type-count camel-line < 40)
