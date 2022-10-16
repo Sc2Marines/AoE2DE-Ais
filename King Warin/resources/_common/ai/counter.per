@@ -344,6 +344,8 @@
 (set-goal gl_train_militia 1)
 )
 
+
+
 (defrule
 (current-age >= castle-age)
 (goal gl_en_spearman 1)
@@ -1268,8 +1270,66 @@
 (set-goal gl_train_camel 1)
 )
 
+;COUNTER SWORDSMAN RULES================================================================================================
+
+;5----------------------------------------------------------------------------------------------------------------
+
+;hand cannoneer
+(defrule
+(current-age == castle-age)
+(goal gl_en_swordsman 1)
+(can-train hand-cannoneer)
+(unit-type-count hand-cannoneer < 5)
+=>
+(train hand-cannoneer )
+(set-goal gl_train_hand-cannoneer 1)
+)
+
+;archer
+(defrule
+(current-age == feudal-age)
+(goal gl_en_swordsman 1)
+(goal gl_train_hand-cannoneer 0)
+(can-train archer-line)
+(unit-type-count archer-line < 5)
+=>
+(train archer-line )
+(set-goal gl_train_archer 1)
+)
+
+(defrule
+(current-age > feudal-age)
+(goal gl_en_swordsman 1)
+(goal gl_train_hand-cannoneer 0)
+(or
+    (not (research-completed ri-crossbowman))
+    (up-research-status c: ri-crossbowman >= research-pending)
+)
+(can-train archer-line)
+(unit-type-count archer-line < 5)
+=>
+(train archer-line )
+(set-goal gl_train_archer 1)
+)
+
+(defrule
+(current-age > castle-age)
+(goal gl_en_swordsman 1)
+(goal gl_train_hand-cannoneer 0)
+(or
+    (not (research-completed ri-arbalester))
+    (up-research-status c: ri-arbalester >= research-pending)
+)
+(can-train archer-line)
+(unit-type-count archer-line < 5)
+=>
+(train archer-line )
+(set-goal gl_train_archer 1)
+)
 
 
+
+;rendu ici
 
 
 
@@ -1550,4 +1610,105 @@
 (set-goal gl_upgrade_camel 0)
 )
 
-;
+;================================================================================================
+;----------------------------------------Launch upgrades-----------------------------------------
+;================================================================================================
+
+;militia
+(defrule
+(current-age >= feudal-age)
+(goal gl_en_spearman 1)
+(or 
+    (not (research-completed ri-man-at-arms))
+    (not (up-research-status c: ri-man-at-arms >= research-pending))
+)
+(can-train militiaman-line)
+=>
+(set-goal gl_upgrade_militia 1)
+)
+
+(defrule
+(current-age >= castle-age)
+(goal gl_en_spearman 1)
+(or 
+    (not (research-completed ri-long-swordsman))
+    (not (up-research-status c: ri-long-swordsman >= research-pending))
+)
+(can-train militia-line)
+=>
+(set-goal gl_upgrade_militia 1)
+)
+
+(defrule
+(current-age >= imperial-age)
+(goal gl_en_spearman 1)
+(or 
+    (not (research-completed ri-two-handed-swordsman))
+    (not (up-research-status c: ri-two-handed-swordsman >= research-pending))
+)
+(can-train militia-line)
+=>
+(set-goal gl_upgrade_militia 1)
+)
+
+;archer
+(defrule
+(current-age >= castle-age)
+(goal gl_en_spearman 1)
+(goal gl_train_militia 0)
+(goal gl_train_hand-cannoneer 0)
+(or 
+    (not (research-completed ri-crossbow))
+    (not (up-research-status c: ri-crossbow >= research-pending))
+)
+(can-train archer-line)
+=>
+(set-goal gl_upgrade_archer 1)
+)
+
+(defrule
+(current-age >= imperial-age)
+(goal gl_en_spearman 1)
+(goal gl_train_militia 0)
+(goal gl_train_hand-cannoneer 0)
+(or 
+    (not (research-completed ri-arbalest))
+    (not (up-research-status c: ri-arbalest >= research-pending))
+)
+(can-train archer-line)
+=>
+(set-goal gl_upgrade_archer 1)
+)
+
+;skirmisher
+
+(defrule
+(current-age >= castle-age)
+(goal gl_en_spearman 1)
+(goal gl_train_militia 0)
+(goal gl_train_hand-cannoneer 0)
+(goal gl_train_archer 0)
+(or 
+    (not (research-completed ri-elite-skirmisher))
+    (not (up-research-status c: ri-elite-skirmisher >= research-pending))
+)
+(can-train skirmisher-line)
+=>
+(set-goal gl_upgrade_skirmisher 1)
+)
+
+(defrule
+(current-age >= imperial-age)
+(goal gl_en_spearman 1)
+(goal gl_train_militia 0)
+(goal gl_train_hand-cannoneer 0)
+(goal gl_train_archer 0)
+(or 
+    (not (research-completed ri-elite-skirmisher))
+    (not (up-research-status c: ri-elite-skirmisher >= research-pending))
+)
+(can-train skirmisher-line)
+=>
+(set-goal gl_upgrade_skirmisher 1)
+)
+

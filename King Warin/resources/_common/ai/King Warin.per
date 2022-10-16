@@ -25,6 +25,23 @@
 (disable-self)
 )
 
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-cap-civilian-builders 200)
+	(set-strategic-number sn-consecutive-idle-unit-limit 0)
+	(set-strategic-number sn-do-not-scale-for-difficulty-level 1)
+	(set-strategic-number sn-enable-patrol-attack 1)
+	(set-strategic-number sn-initial-exploration-required 0)
+	(set-strategic-number sn-maximum-fish-boat-drop-distance 30)
+	(set-strategic-number sn-maximum-food-drop-distance 20)
+	(set-strategic-number sn-maximum-gold-drop-distance 20)
+	(set-strategic-number sn-maximum-hunt-drop-distance 30)
+	(set-strategic-number sn-maximum-stone-drop-distance 20)
+	(set-strategic-number sn-scale-minimum-attack-group-size 0)
+	(set-strategic-number sn-task-ungrouped-soldiers 0)
+	(disable-self)
+)
 
 
 
@@ -713,16 +730,16 @@
 )
 
 
-;systeme de detection de fin de mines
-(defrule 
-(resource-found gold)
-(dropsite-min-distance sn-gold-dropsite-distance > 15)
-=>
-(up-modify-goal gl_town-size c:+ 1)
-)
+; ;systeme de detection de fin de mines
+; (defrule 
+; (resource-found gold)
+; (dropsite-min-distance sn-gold-dropsite-distance > 15)
+; =>
+; (up-modify-goal gl_town-size c:+ 1)
+; )
 
-(defrule
-(true)
-=>
-(set-strategic-number sn-maximum-town-size gl_town-size)
-)
+; (defrule
+; (true)
+; =>
+; (set-strategic-number sn-maximum-town-size gl_town-size)
+; )
