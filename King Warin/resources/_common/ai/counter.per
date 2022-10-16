@@ -301,7 +301,7 @@
 (defconst gl_upgrade_hand-cannoneer 227)
 (defconst gl_upgrade_siege 228)
 (defconst gl_upgrade_skirmisher 229)
-(defconst gl_upgrade_cavalry-archer 230)
+(defconst gl_upgrade_cav_archer 230)
 (defconst gl_upgrade_camel 231)
 
 
@@ -318,7 +318,7 @@
 (set-goal gl_upgrade_hand-cannoneer 0)
 (set-goal gl_upgrade_siege 0)
 (set-goal gl_upgrade_skirmisher 0)
-(set-goal gl_upgrade_cavalry-archer 0)
+(set-goal gl_upgrade_cav_archer 0)
 (set-goal gl_upgrade_camel 0)
 )
 
@@ -1457,7 +1457,7 @@
 (defrule
 (or
 (goal gl_upgrade_eagle 1)
-(unit-type-count-total eagle-line >= 10)
+(unit-type-count-total eagle-warrior-line >= 10)
 )
 (can-research ri-elite-eagle-warrior)
 =>
