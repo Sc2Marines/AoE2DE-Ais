@@ -1,13 +1,15 @@
 (load "counter.per")
 
+
+
 ;defconsts des build order
-(defconst gl_militia_rush 1)
-(defconst gl_scout-cavalry_rush 2)
-(defconst gl_archer_rush 3)
-(defconst gl_fast_castle 4)
-(defconst gl_rouleau 5)
-(defconst gl_go_to_farm 6)
-(defconst gl_end_of_rush 7)
+(defconst gl_militia_rush 101)
+(defconst gl_scout-cavalry_rush 102)
+(defconst gl_archer_rush 103)
+(defconst gl_fast_castle 104)
+(defconst gl_rouleau 105)
+(defconst gl_go_to_farm 106)
+(defconst gl_end_of_rush 107)
 
 
 
@@ -61,12 +63,25 @@
 ;------------------------------------GENERAL RULES--------------------------------
 ;=================================================================================
 
+
+
+
 ;house
 (defrule
 (housing-headroom < 4)
 (can-build house)
 =>
 (build house)
+)
+
+(defconst gl_explorer 500)
+
+(defrule
+	(true)
+=>
+(up-get-fact military-population 0 gl_explorer)
+(up-chat-data-to-player my-player-number "I have %d military" g: gl_explorer)
+(disable-self)
 )
 
 ;explorer
@@ -227,6 +242,16 @@
 (disable-self)
 )
 
+;lumber camp
+(defrule
+(current-age == dark-age)
+(dropsite-min-distance wood > 10)
+(can-build lumber-camp)
+(resource-found wood)
+=>
+(build lumber-camp)
+)
+
 ;=================================================================================
 ;--------------------------------------FEUDAL AGE---------------------------------
 ;=================================================================================
@@ -277,6 +302,10 @@
 (defrule
 (current-age == feudal-age)
 (building-type-count farm < 18)
+(or
+	(dropsite-min-distance wood < 10)
+	(wood-amount > 500)
+)
 (can-build farm)
 =>
 (build farm)
@@ -583,7 +612,20 @@
 
 ;attack
 (defrule
-(unit-type-count knight-line >= 14)
+(or
+(or
+	(and
+	(unit-type-count knight-line >= 14)
+	(players-military-population 2 < 10)
+	)
+	(and
+	(military-population > 80)
+	(players-military-population 2 < 70)
+	)
+)
+(population >= 195)
+)
+
 =>
 (attack-now)
 )
@@ -722,24 +764,37 @@
 (build mining-camp)
 )
 
-(defconst gl_town-size 201)
-(defrule 
-(true)
-=>
-(set-goal gl_town-size sn-maximum-town-size)
-)
 
 
-; ;systeme de detection de fin de mines
-; (defrule 
-; (resource-found gold)
-; (dropsite-min-distance sn-gold-dropsite-distance > 15)
-; =>
-; (up-modify-goal gl_town-size c:+ 1)
-; )
 
-; (defrule
-; (true)
-; =>
-; (set-strategic-number sn-maximum-town-size gl_town-size)
-; )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

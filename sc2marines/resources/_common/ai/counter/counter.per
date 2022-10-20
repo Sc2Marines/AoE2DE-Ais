@@ -141,7 +141,7 @@
 
 ;cav
 (defrule
-(up_up-compare-goal gl_en_cav > 0)
+(up-compare-goal gl_en_cav > 0)
 =>
 (up-modify-goal gl_en_cav g:+ gl_en_scout)
 (up-modify-goal gl_en_cav g:+ gl_en_knight)
@@ -153,7 +153,7 @@
 
 ;inf
 (defrule
-(up_up-compare-goal gl_en_inf > 0)
+(up-compare-goal gl_en_inf > 0)
 =>
 (up-modify-goal gl_en_inf g:+ gl_en_archer)
 (up-modify-goal gl_en_inf g:+ gl_en_spearman)
@@ -244,7 +244,7 @@
 (up-compare-goal gl_en_cav g:= 0)
 (up-compare-goal gl_en_inf g:> 0)
 (up-compare-goal gl_en_siege g:= 0)
-(up-compare-goal gl_en_hand-cannoneer g:= 0)
+(up-compare-goal gl_en_hand-canonner g:= 0)
 (up-compare-goal gl_en_archer g:= 0)
 (or
     (up-compare-goal gl_en_spearman g:> 0)
@@ -285,7 +285,7 @@
 (up-compare-goal gl_en_siege g:= 0)
 (or
     (up-compare-goal gl_en_archer g:> 0)
-    (up-compare-goal gl_en_hand-cannoneer g:> 0)
+    (up-compare-goal gl_en_hand-canonner g:> 0)
 )
 (up-compare-goal gl_en_swordsman g:= 0)
 (up-compare-goal gl_en_eagle g:= 0)
@@ -296,16 +296,16 @@
 )
 
 ;ennemy army is only siege
-;knight line
-(defrule
-(up-compare-goal gl_en_cav g:= 0)
-(up-compare-goal gl_en_inf g:= 0)
-(up-compare-goal gl_en_siege g:> 0)
-(can-train knight-line)
-(unit-type-count knight-line < gl_en_siege)
-=>
-(train siege-line)
-)
+; ;knight line
+; (defrule
+; (up-compare-goal gl_en_cav g:= 0)
+; (up-compare-goal gl_en_inf g:= 0)
+; (up-compare-goal gl_en_siege g:> 0)
+; (can-train knight-line)
+; (unit-type-count knight-line < gl_en_siege)
+; =>
+; (train siege-line)
+; )
 
 ;swordsmen line
 (defrule
@@ -326,10 +326,10 @@
 (up-compare-goal gl_en_siege g:> 0)
 (not(can-train knight-line))
 (not(can-train militiaman-line))
-(can-train scout-line)
-(unit-type-count scout-line < gl_en_siege)
+(can-train scout-cavalry-line)
+(unit-type-count scout-cavalry-line < gl_en_siege)
 =>
-(train scout-line)
+(train scout-cavalry-line)
 )
 
 ;spearmen line
@@ -339,7 +339,7 @@
 (up-compare-goal gl_en_siege g:> 0)
 (not(can-train knight-line))
 (not(can-train militiaman-line))
-(not(can-train scout-line))
+(not(can-train scout-cavalry-line))
 (can-train spearman-line)
 (unit-type-count spearman-line < gl_en_siege)
 =>
@@ -353,7 +353,7 @@
 (up-compare-goal gl_en_siege g:> 0)
 (not(can-train knight-line))
 (not(can-train militiaman-line))
-(not(can-train scout-line))
+(not(can-train scout-cavalry-line))
 (not(can-train spearman-line))
 (can-train eagle-warrior-line)
 (unit-type-count eagle-warrior-line < gl_en_siege)
@@ -368,7 +368,7 @@
 (up-compare-goal gl_en_siege g:> 0)
 (not(can-train knight-line))
 (not(can-train militiaman-line))
-(not(can-train scout-line))
+(not(can-train scout-cavalry-line))
 (not(can-train spearman-line))
 (not(can-train eagle-warrior-line))
 =>
