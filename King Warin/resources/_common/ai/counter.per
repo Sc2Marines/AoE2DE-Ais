@@ -1,13 +1,13 @@
-(defconst gl_en_scout 101)     ;counter (siege),(infantry except spearmen)
-(defconst gl_en_archer 102)    ;counter (infantry except skirmisher)
-(defconst gl_en_spearman 103)  ;counter (cavalry),(siege)
-(defconst gl_en_swordsman 104) ;counter (siege),(infantry except swordsman)
-(defconst gl_en_knight 105)    ;counter (siege),(infantry except spearmen),(calvary except knight and horse archer and camel)
-(defconst gl_en_eagle 106)     ;counter (siege)
-(defconst gl_en_siege 107)     
-(defconst gl_en_cavalery-archer 108) ;counter (cavalry except camel)
-(defconst gl_en_hand-canonner 109)   ;counter (infantry except skirmisher and archer)
-(defconst gl_en_camel 110)           ;counter (siege),(cavalry except camel)
+(defconst gl_en_scout 101);X     ;counter (siege),(infantry except spearmen)
+(defconst gl_en_archer 102);X    ;counter (infantry except skirmisher)
+(defconst gl_en_spearman 103);X  ;counter (cavalry),(siege)
+(defconst gl_en_swordsman 104);X ;counter (siege),(infantry except swordsman)
+(defconst gl_en_knight 105);X    ;counter (siege),(infantry except spearmen),(calvary except knight and horse archer and camel)
+(defconst gl_en_eagle 106);X     ;counter (siege)
+(defconst gl_en_siege 107);X     
+(defconst gl_en_cavalery-archer 108);X ;counter (cavalry except camel)
+(defconst gl_en_hand-canonner 109);X   ;counter (infantry except skirmisher and archer)
+(defconst gl_en_camel 110)  ;X         ;counter (siege),(cavalry except camel)
 (defconst gl_en_steppe-lancer 111)   ;counter (siege),(cavalry except camel and steppe-lancer),(infantry except spearmen)
 (defconst gl_en_battle-elephant 112) ;counter (siege),(cavalry except camel and battle-elephant),(infantry except spearmen)
 (defconst gl_en_skirmisher 113)      ;counter (infantry except skirmisher and swordsman and eagle)
@@ -325,1057 +325,1614 @@
 
 ;COUNTER SPEARMAN RULES================================================================================================
 
-
-
-;5----------------------------------------------------------------------------------------------------------------
-
 ;militia
 (defrule
-(current-age >= feudal-age)
-(goal gl_en_spearman 1)
-(or 
-    (not (research-completed ri-man-at-arms))
-    (up-research-status c: ri-man-at-arms >= research-pending)
+    (can-train militiaman-line)
+    (or
+        (or
+            (and
+                (current-age >= feudal-age)
+                (or 
+                    (not (research-completed ri-man-at-arms))
+                    (up-research-status c: ri-man-at-arms >= research-pending)
+                )
+            )
+            (and
+                (current-age >= castle-age)
+                (or 
+                    (not (research-completed ri-long-swordsman))
+                    (up-research-status c: ri-long-swordsman >= research-pending)
+                )
+            )
+        )
+        (and
+            (current-age >= imperial-age)
+            (or 
+                (not (research-completed ri-two-handed-swordsman))
+                (up-research-status c: ri-two-handed-swordsman >= research-pending)
+            )
+        )
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_spearman 1)
+                (unit-type-count militiaman-line < 5)
+            )
+            (and
+                (goal gl_en_spearman 2)
+                (unit-type-count militiaman-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_spearman 3)
+                (unit-type-count militiaman-line < 20)
+            )
+            (and
+                (goal gl_en_spearman 4)
+                (unit-type-count militiaman-line < 40)
+            )
+        )
+    )
+    =>
+    (train militiaman-line)
+    (set-goal gl_train_militia 1)
 )
-(can-train militiaman-line)
-(unit-type-count militiaman-line < 5)
-=>
-(train militiaman-line)
-(set-goal gl_train_militia 1)
-)
-
-
-
-(defrule
-(current-age >= castle-age)
-(goal gl_en_spearman 1)
-(or 
-    (not (research-completed ri-long-swordsman))
-    (up-research-status c: ri-long-swordsman >= research-pending)
-)
-(can-train militia-line)
-(unit-type-count militia-line < 5)
-=>
-(train militia-line )
-(set-goal gl_train_militia 1)
-)
-
-(defrule
-(current-age >= imperial-age)
-(goal gl_en_spearman 1)
-(or 
-    (not (research-completed ri-two-handed-swordsman))
-    (up-research-status c: ri-two-handed-swordsman >= research-pending)
-)
-(can-train militia-line)
-(unit-type-count militia-line < 5)
-=>
-(train militia-line )
-(set-goal gl_train_militia 1)
-)
-
 
 ;Hand Cannoneer
 (defrule 
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(can-train hand-cannoneer)
-(unit-type-count hand-cannoneer < 5)
-=>
-(train hand-cannoneer )
-(set-goal gl_train_hand-cannoneer 1)
+    (goal gl_train_militia 0)
+    (can-train hand-cannoneer)
+    (or
+        (or
+            (and
+                (goal gl_en_spearman 1)
+                (unit-type-count hand-cannoneer < 5)
+            )
+            (and
+                (goal gl_en_spearman 2)
+                (unit-type-count hand-cannoneer < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_spearman 3)
+                (unit-type-count hand-cannoneer < 20)
+            )
+            (and
+                (goal gl_en_spearman 4)
+                (unit-type-count hand-cannoneer < 40)
+            )
+        )
+    )
+    =>
+    (train hand-cannoneer )
+    (set-goal gl_train_hand-cannoneer 1)
 )
 
 ;archer
 (defrule
-(current-age >= feudal-age)
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(goal gl_train_hand-cannoneer 0)
-(can-train archer-line)
-(unit-type-count archer-line < 5)
-=>
-(train archer-line )
-(set-goal gl_train_archer 1)
+    (goal gl_train_militia 0)
+    (goal gl_train_hand-cannoneer 0)
+    (can-train archer-line)
+    (or
+        (and
+            (current-age >= feudal-age)
+            (or 
+                (not (research-completed ri-crossbow))
+                (up-research-status c: ri-crossbow >= research-pending)
+            )
+        )
+        (and
+            (current-age >= castle-age)
+            (or 
+                (not (research-completed ri-arbalest))
+                (up-research-status c: ri-arbalest >= research-pending)
+            )
+        )
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_spearman 1)
+                (unit-type-count archer-line < 5)
+            )
+            (and
+                (goal gl_en_spearman 2)
+                (unit-type-count archer-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_spearman 3)
+                (unit-type-count archer-line < 20)
+            )
+            (and
+                (goal gl_en_spearman 4)
+                (unit-type-count archer-line < 40)
+            )
+        )
+    )
+    =>
+    (train archer-line )
+    (set-goal gl_train_archer 1)
 )
-
-(defrule
-(current-age >= castle-age)
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(goal gl_train_hand-cannoneer 0)
-(or 
-
-    (not (research-completed ri-crossbow))
-    (up-research-status c: ri-crossbow >= research-pending)
-)
-(can-train archer-line)
-(unit-type-count archer-line < 5)
-=>
-(train archer-line )
-(set-goal gl_train_archer 1)
-)
-
 ;skirmisher
 (defrule
-(current-age >= feudal-age)
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(goal gl_train_hand-cannoneer 0)
-(goal gl_train_archer 0)
-(can-train skirmisher-line)
-(unit-type-count skirmisher-line < 5)
-=>
-(train skirmisher-line )
-(set-goal gl_train_skirmisher 1)
+    (goal gl_train_militia 0)
+    (goal gl_train_hand-cannoneer 0)
+    (goal gl_train_archer 0)
+    (can-train skirmisher-line)
+    (or
+        (and
+            (current-age >= castle-age)
+            (or 
+                (not (research-completed ri-elite-skirmisher))
+                (up-research-status c: ri-elite-skirmisher >= research-pending)
+            )
+        )
+        (current-age >= feudal-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_spearman 1)
+                (unit-type-count skirmisher-line < 5)
+            )
+            (and
+                (goal gl_en_spearman 2)
+                (unit-type-count skirmisher-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_spearman 3)
+                (unit-type-count skirmisher-line < 20)
+            )
+            (and
+                (goal gl_en_spearman 4)
+                (unit-type-count skirmisher-line < 40)
+            )
+        )
+    )
+    =>
+    (train skirmisher-line )
+    (set-goal gl_train_skirmisher 1)
 )
 
-(defrule
-(current-age >= castle-age)
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(goal gl_train_hand-cannoneer 0)
-(goal gl_train_archer 0)
-(or 
-    (not (research-completed ri-elite-skirmisher))
-    (up-research-status c: ri-elite-skirmisher >= research-pending)
-)
-(can-train skirmisher-line)
-(unit-type-count skirmisher-line < 5)
-=>
-(train skirmisher-line )
-(set-goal gl_train_skirmisher 1)
-)
-
-;10----------------------------------------------------------------------------------------------------------------
-
-;militia
-(defrule
-(current-age >= feudal-age)
-(goal gl_en_spearman 1)
-(or 
-    (not (research-completed ri-man-at-arms))
-    (up-research-status c: ri-man-at-arms >= research-pending)
-)
-(can-train militiaman-line)
-(unit-type-count militiaman-line < 10)
-=>
-(train militiaman-line)
-(set-goal gl_train_militia 1)
-)
-
-(defrule
-(current-age >= castle-age)
-(goal gl_en_spearman 1)
-(or 
-    (not (research-completed ri-long-swordsman))
-    (up-research-status c: ri-long-swordsman >= research-pending)
-)
-(can-train militia-line)
-(unit-type-count militia-line < 10)
-=>
-(train militia-line )
-(set-goal gl_train_militia 1)
-)
-
-(defrule
-(current-age >= imperial-age)
-(goal gl_en_spearman 1)
-(or 
-    (not (research-completed ri-two-handed-swordsman))
-    (up-research-status c: ri-two-handed-swordsman >= research-pending)
-)
-(can-train militia-line)
-(unit-type-count militia-line < 10)
-=>
-(train militia-line )
-(set-goal gl_train_militia 1)
-)
-
-;Hand Cannoneer
-(defrule
-(current-age >= feudal-age)
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(can-train hand-cannoneer)
-(unit-type-count hand-cannoneer < 10)
-=>
-(train hand-cannoneer )
-(set-goal gl_train_hand-cannoneer 1)
-)
-
-;archer
-(defrule
-(current-age >= feudal-age)
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(goal gl_train_hand-cannoneer 0)
-(can-train archer-line)
-(unit-type-count archer-line < 10)
-=>
-(train archer-line )
-(set-goal gl_train_archer 1)
-)
-
-(defrule
-(current-age >= castle-age)
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(goal gl_train_hand-cannoneer 0)
-(or 
-
-    (not (research-completed ri-crossbow))
-    (up-research-status c: ri-crossbow >= research-pending)
-)
-(can-train archer-line)
-(unit-type-count archer-line < 10)
-=>
-(train archer-line )
-(set-goal gl_train_archer 1)
-)
-
-;skirmisher
-(defrule
-(current-age >= feudal-age)
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(goal gl_train_hand-cannoneer 0)
-(goal gl_train_archer 0)
-(can-train skirmisher-line)
-(unit-type-count skirmisher-line < 10)
-=>
-(train skirmisher-line )
-(set-goal gl_train_skirmisher 1)
-)
-
-(defrule
-(current-age >= castle-age)
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(goal gl_train_hand-cannoneer 0)
-(goal gl_train_archer 0)
-(or 
-    (not (research-completed ri-elite-skirmisher))
-    (up-research-status c: ri-elite-skirmisher >= research-pending)
-)
-(can-train skirmisher-line)
-(unit-type-count skirmisher-line < 10)
-=>
-(train skirmisher-line )
-(set-goal gl_train_skirmisher 1)
-)
-
-;20----------------------------------------------------------------------------------------------------------------
-
-;militia
-(defrule
-(current-age >= feudal-age)
-(goal gl_en_spearman 1)
-(or 
-    (not (research-completed ri-man-at-arms))
-    (up-research-status c: ri-man-at-arms >= research-pending)
-)
-(can-train militiaman-line)
-(unit-type-count militiaman-line < 20)
-=>
-(train militiaman-line)
-(set-goal gl_train_militia 1)
-)
-
-(defrule
-(current-age >= castle-age)
-(goal gl_en_spearman 1)
-(or 
-    (not (research-completed ri-long-swordsman))
-    (up-research-status c: ri-long-swordsman >= research-pending)
-)
-(can-train militia-line)
-(unit-type-count militia-line < 20)
-=>
-(train militia-line )
-(set-goal gl_train_militia 1)
-)
-
-(defrule
-(current-age >= imperial-age)
-(goal gl_en_spearman 1)
-(or 
-    (not (research-completed ri-two-handed-swordsman))
-    (up-research-status c: ri-two-handed-swordsman >= research-pending)
-)
-(can-train militia-line)
-(unit-type-count militia-line < 20)
-=>
-(train militia-line )
-(set-goal gl_train_militia 1)
-)
-
-;Hand Cannoneer
-(defrule
-(current-age >= feudal-age)
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(can-train hand-cannoneer)
-(unit-type-count hand-cannoneer < 20)
-=>
-(train hand-cannoneer )
-(set-goal gl_train_hand-cannoneer 1)
-)
-
-;archer
-(defrule
-(current-age >= feudal-age)
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(goal gl_train_hand-cannoneer 0)
-(can-train archer-line)
-(unit-type-count archer-line < 20)
-=>
-(train archer-line )
-(set-goal gl_train_archer 1)
-)
-
-(defrule
-(current-age >= castle-age)
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(goal gl_train_hand-cannoneer 0)
-(or 
-
-    (not (research-completed ri-crossbow))
-    (up-research-status c: ri-crossbow >= research-pending)
-)
-(can-train archer-line)
-(unit-type-count archer-line < 20)
-=>
-(train archer-line )
-(set-goal gl_train_archer 1)
-)
-
-;skirmisher
-(defrule
-(current-age >= feudal-age)
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(goal gl_train_hand-cannoneer 0)
-(goal gl_train_archer 0)
-(can-train skirmisher-line)
-(unit-type-count skirmisher-line < 20)
-=>
-(train skirmisher-line )
-(set-goal gl_train_skirmisher 1)
-)
-
-(defrule
-(current-age >= castle-age)
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(goal gl_train_hand-cannoneer 0)
-(goal gl_train_archer 0)
-(or 
-    (not (research-completed ri-elite-skirmisher))
-    (up-research-status c: ri-elite-skirmisher >= research-pending)
-)
-(can-train skirmisher-line)
-(unit-type-count skirmisher-line < 20)
-=>
-(train skirmisher-line )
-(set-goal gl_train_skirmisher 1)
-)
-
-;40----------------------------------------------------------------------------------------------------------------
-
-;militia
-(defrule
-(current-age >= feudal-age)
-(goal gl_en_spearman 1)
-(or 
-    (not (research-completed ri-man-at-arms))
-    (up-research-status c: ri-man-at-arms >= research-pending)
-)
-(can-train militiaman-line)
-(unit-type-count militiaman-line < 40)
-=>
-(train militiaman-line)
-(set-goal gl_train_militia 1)
-)
-
-(defrule
-(current-age >= castle-age)
-(goal gl_en_spearman 1)
-(or 
-    (not (research-completed ri-long-swordsman))
-    (up-research-status c: ri-long-swordsman >= research-pending)
-)
-(can-train militia-line)
-(unit-type-count militia-line < 40)
-=>
-(train militia-line )
-(set-goal gl_train_militia 1)
-)
-
-(defrule
-(current-age >= imperial-age)
-(goal gl_en_spearman 1)
-(or 
-    (not (research-completed ri-two-handed-swordsman))
-    (up-research-status c: ri-two-handed-swordsman >= research-pending)
-)
-(can-train militia-line)
-(unit-type-count militia-line < 40)
-=>
-(train militia-line )
-(set-goal gl_train_militia 1)
-)
-
-;Hand Cannoneer
-(defrule
-(current-age >= feudal-age)
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(can-train hand-cannoneer)
-(unit-type-count hand-cannoneer < 40)
-=>
-(train hand-cannoneer )
-(set-goal gl_train_hand-cannoneer 1)
-)
-
-;archer
-(defrule
-(current-age >= feudal-age)
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(goal gl_train_hand-cannoneer 0)
-(can-train archer-line)
-(unit-type-count archer-line < 40)
-=>
-(train archer-line )
-(set-goal gl_train_archer 1)
-)
-
-(defrule
-(current-age >= castle-age)
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(goal gl_train_hand-cannoneer 0)
-(or 
-
-    (not (research-completed ri-crossbow))
-    (up-research-status c: ri-crossbow >= research-pending)
-)
-(can-train archer-line)
-(unit-type-count archer-line < 40)
-=>
-(train archer-line )
-(set-goal gl_train_archer 1)
-)
-
-;skirmisher
-(defrule
-(current-age >= feudal-age)
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(goal gl_train_hand-cannoneer 0)
-(goal gl_train_archer 0)
-(can-train skirmisher-line)
-(unit-type-count skirmisher-line < 40)
-=>
-(train skirmisher-line )
-(set-goal gl_train_skirmisher 1)
-)
-
-(defrule
-(current-age >= castle-age)
-(goal gl_en_spearman 1)
-(goal gl_train_militia 0)
-(goal gl_train_hand-cannoneer 0)
-(goal gl_train_archer 0)
-(or 
-    (not (research-completed ri-elite-skirmisher))
-    (up-research-status c: ri-elite-skirmisher >= research-pending)
-)
-(can-train skirmisher-line)
-(unit-type-count skirmisher-line < 40)
-=>
-(train skirmisher-line )
-(set-goal gl_train_skirmisher 1)
-)
 
 ;COUNTER SCOUT RULES================================================================================================
 
-
-;5----------------------------------------------------------------------------------------------------------------
-
 ;spearmen
 
 (defrule
-(current-age == feudal-age)
-(goal gl_en_scout 1)
-(can-train spearman-line)
-(unit-type-count spearman-line < 5)
-=>
-(train spearman-line )
-(set-goal gl_train_spearman 1)
-)
-
-
-(defrule
-(current-age > feudal-age)
-(goal gl_en_scout 1)
-(or
-    (not (research-completed ri-pikeman))
-    (up-research-status c: ri-pikeman >= research-pending)
-)
-(can-train spearman-line)
-(unit-type-count spearman-line < 5)
-=>
-(train spearman-line )
-(set-goal gl_train_spearman 1)
-)
-
-(defrule
-(current-age > castle-age)
-(goal gl_en_scout 1)
-(or
-    (not (research-completed ri-halberdier))
-    (up-research-status c: ri-halberdier >= research-pending)
-)
-(can-train spearman-line)
-(unit-type-count spearman-line < 5)
-=>
-(train spearman-line )
-(set-goal gl_train_spearman 1)
+    (can-train spearman-line)
+    (or
+        (or
+            (and
+                (current-age >= feudal-age)
+                (or
+                    (not (research-completed ri-pikeman))
+                    (up-research-status c: ri-pikeman >= research-pending)
+                )
+            )
+            (and
+                (current-age >= castle-age)
+                (or
+                    (not (research-completed ri-halberdier))
+                    (up-research-status c: ri-halberdier >= research-pending)
+                )
+            )
+        )
+        (current-age == feudal-age)
+    )
+    =>
+    (train spearman-line )
+    (set-goal gl_train_spearman 1)
 )
 
 ;eagle
 (defrule
-(current-age == feudal-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(can-train eagle-warrior)
-(unit-type-count eagle-warrior < 5)
-=>
-(train eagle-warrior )
-(set-goal gl_train_eagle 1)
+    (goal gl_train_spearman 0)
+    (can-train eagle)
+    (or
+        (or
+            (and
+                (current-age >= castle-age)
+                (or
+                    (not (research-completed ri-eagle-warrior))
+                    (up-research-status c: ri-eagle-warrior >= research-pending)
+                )
+            )
+            (and 
+                (current-age >= imperial-age)
+                (or
+                    (not (research-completed ri-elite-eagle-warrior))
+                    (up-research-status c: ri-elite-eagle-warrior >= research-pending)
+                )
+            )
+        )
+        (current-age == feudal-age)
+    )
+    =>
+    (train eagle )
+    (set-goal gl_train_eagle 1)
 )
 
-(defrule
-(current-age > feudal-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(or 
-    (not (research-completed ri-eagle-warrior))
-    (up-research-status c: ri-eagle-warrior >= research-pending)
-)
-(can-train eagle-warrior)
-(unit-type-count eagle-warrior < 5)
-=>
-(train eagle-warrior )
-(set-goal gl_train_eagle 1)
-)
 
-(defrule
-(current-age > castle-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(or 
-    (not (research-completed ri-elite-eagle-warrior))
-    (up-research-status c: ri-elite-eagle-warrior >= research-pending)
-)
-(can-train eagle-warrior)
-(unit-type-count eagle-warrior < 5)
-=>
-(train eagle-warrior )
-(set-goal gl_train_eagle 1)
-)
+
 
 ;camel
 (defrule
-(current-age >= feudal-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(goal gl_train_eagle 0)
-(can-train camel-line)
-(unit-type-count camel-line < 5)
-=>
-(train camel-line )
-(set-goal gl_train_camel 1)
-)
-
-(defrule
-(current-age >= castle-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(goal gl_train_eagle 0)
-(or 
-    (not (research-completed ri-heavy-camel))
-    (up-research-status c: ri-heavy-camel >= research-pending)
-)
-(can-train camel-line)
-(unit-type-count camel-line < 5)
-=>
-(train camel-line )
-(set-goal gl_train_camel 1)
-)
-
-;10----------------------------------------------------------------------------------------------------------------
-
-;spearmen
-(defrule
-(current-age == feudal-age)
-(goal gl_en_scout 1)
-(can-train spearman-line)
-(unit-type-count spearman-line < 10)
-=>
-(train spearman-line )
-(set-goal gl_train_spearman 1)
+    (goal gl_train_spearman 0)
+    (goal gl_train_eagle 0)
+    (can-train camel-line)
+    (or
+        (and 
+            (current-age >= imperial-age)
+            (or
+                (not (research-completed ri-heavy-camel))
+                (up-research-status c: ri-heavy-camel >= research-pending)
+            )
+        )
+        (current-age == castle-age)
+    )
+    =>
+    (train camel-line )
+    (set-goal gl_train_camel 1)
 )
 
 
-(defrule
-(current-age > feudal-age)
-(goal gl_en_scout 1)
-(goal gl_train_camel 0)
-(or
-    (not (research-completed ri-pikeman))
-    (up-research-status c: ri-pikeman >= research-pending)
-)
-(can-train spearman-line)
-(unit-type-count spearman-line < 10)
-=>
-(train spearman-line )
-(set-goal gl_train_spearman 1)
-)
-
-(defrule
-(current-age > castle-age)
-(goal gl_en_scout 1)
-(goal gl_train_camel 0)
-(or
-    (not (research-completed ri-halberdier))
-    (up-research-status c: ri-halberdier >= research-pending)
-)
-(can-train spearman-line)
-(unit-type-count spearman-line < 10)
-=>
-(train spearman-line )
-(set-goal gl_train_spearman 1)
-)
-
-;eagle
-(defrule
-(current-age == feudal-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(can-train eagle-warrior)
-(unit-type-count eagle-warrior < 10)
-=>
-(train eagle-warrior )
-(set-goal gl_train_eagle 1)
-)
-
-(defrule
-(current-age > feudal-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(goal gl_train_camel 0)
-(or 
-    (not (research-completed ri-eagle-warrior))
-    (up-research-status c: ri-eagle-warrior >= research-pending)
-)
-(can-train eagle-warrior)
-(unit-type-count eagle-warrior < 10)
-=>
-(train eagle-warrior )
-(set-goal gl_train_eagle 1)
-)
-
-(defrule
-(current-age > castle-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(goal gl_train_camel 0)
-(or 
-    (not (research-completed ri-elite-eagle-warrior))
-    (up-research-status c: ri-elite-eagle-warrior >= research-pending)
-)
-(can-train eagle-warrior)
-(unit-type-count eagle-warrior < 10)
-=>
-(train eagle-warrior )
-(set-goal gl_train_eagle 1)
-)
-
-;camel
-(defrule
-(current-age >= feudal-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(goal gl_train_eagle 0)
-(can-train camel-line)
-(unit-type-count camel-line < 10)
-=>
-(train camel-line )
-(set-goal gl_train_camel 1)
-)
-
-(defrule
-(current-age >= castle-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(goal gl_train_eagle 0)
-(or 
-    (not (research-completed ri-heavy-camel))
-    (up-research-status c: ri-heavy-camel >= research-pending)
-)
-(can-train camel-line)
-(unit-type-count camel-line < 10)
-=>
-(train camel-line )
-(set-goal gl_train_camel 1)
-)
-
-
-;20----------------------------------------------------------------------------------------------------------------
-
-;spearmen
-(defrule
-(current-age == feudal-age)
-(goal gl_en_scout 1)
-(can-train spearman-line)
-(unit-type-count spearman-line < 20)
-=>
-(train spearman-line )
-(set-goal gl_train_spearman 1)
-)
-
-(defrule
-(current-age > feudal-age)
-(goal gl_en_scout 1)
-(goal gl_train_camel 0)
-(or
-    (not (research-completed ri-pikeman))
-    (up-research-status c: ri-pikeman >= research-pending)
-)
-(can-train spearman-line)
-(unit-type-count spearman-line < 20)
-=>
-(train spearman-line )
-(set-goal gl_train_spearman 1)
-)
-
-
-(defrule
-(current-age > castle-age)
-(goal gl_en_scout 1)
-(goal gl_train_camel 0)
-(or
-    (not (research-completed ri-halberdier))
-    (up-research-status c: ri-halberdier >= research-pending)
-)
-(can-train spearman-line)
-(unit-type-count spearman-line < 20)
-=>
-(train spearman-line )
-(set-goal gl_train_spearman 1)
-)
-
-;eagle
-(defrule
-(current-age == feudal-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(can-train eagle-warrior)
-(unit-type-count eagle-warrior < 20)
-=>
-(train eagle-warrior )
-(set-goal gl_train_eagle 1)
-)
-
-(defrule
-(current-age > feudal-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(goal gl_train_camel 0)
-(or 
-    (not (research-completed ri-eagle-warrior))
-    (up-research-status c: ri-eagle-warrior >= research-pending)
-)
-(can-train eagle-warrior)
-(unit-type-count eagle-warrior < 20)
-=>
-(train eagle-warrior )
-(set-goal gl_train_eagle 1)
-)
-
-(defrule
-(current-age > castle-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(goal gl_train_camel 0)
-(or 
-    (not (research-completed ri-elite-eagle-warrior))
-    (up-research-status c: ri-elite-eagle-warrior >= research-pending)
-)
-(can-train eagle-warrior)
-(unit-type-count eagle-warrior < 20)
-=>
-(train eagle-warrior )
-(set-goal gl_train_eagle 1)
-)
-
-;camel
-(defrule
-(current-age >= feudal-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(goal gl_train_eagle 0)
-(can-train camel-line)
-(unit-type-count camel-line < 20)
-=>
-(train camel-line )
-(set-goal gl_train_camel 1)
-)
-
-(defrule
-(current-age >= castle-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(goal gl_train_eagle 0)
-(or 
-    (not (research-completed ri-heavy-camel))
-    (up-research-status c: ri-heavy-camel >= research-pending)
-)
-(can-train camel-line)
-(unit-type-count camel-line < 20)
-=>
-(train camel-line )
-(set-goal gl_train_camel 1)
-)
-
-;40----------------------------------------------------------------------------------------------------------------
-
-;spearmen
-(defrule
-(current-age == feudal-age)
-(goal gl_en_scout 1)
-(can-train spearman-line)
-(unit-type-count spearman-line < 40)
-=>
-(train spearman-line )
-(set-goal gl_train_spearman 1)
-)
-
-(defrule
-(current-age > feudal-age)
-(goal gl_en_scout 1)
-(goal gl_train_camel 0)
-(or
-    (not (research-completed ri-pikeman))
-    (up-research-status c: ri-pikeman >= research-pending)
-)
-(can-train spearman-line)
-(unit-type-count spearman-line < 40)
-=>
-(train spearman-line )
-(set-goal gl_train_spearman 1)
-)
-
-
-(defrule
-(current-age > castle-age)
-(goal gl_en_scout 1)
-(goal gl_train_camel 0)
-(or
-    (not (research-completed ri-halberdier))
-    (up-research-status c: ri-halberdier >= research-pending)
-)
-(can-train spearman-line)
-(unit-type-count spearman-line < 40)
-=>
-(train spearman-line )
-(set-goal gl_train_spearman 1)
-)
-
-;eagle
-(defrule
-(current-age == feudal-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(can-train eagle-warrior)
-(unit-type-count eagle-warrior < 40)
-=>
-(train eagle-warrior )
-(set-goal gl_train_eagle 1)
-)
-
-(defrule
-(current-age > feudal-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(goal gl_train_camel 0)
-(or 
-    (not (research-completed ri-eagle-warrior))
-    (up-research-status c: ri-eagle-warrior >= research-pending)
-)
-(can-train eagle-warrior)
-(unit-type-count eagle-warrior < 40)
-=>
-(train eagle-warrior )
-(set-goal gl_train_eagle 1)
-)
-
-(defrule
-(current-age > castle-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(goal gl_train_camel 0)
-(or 
-    (not (research-completed ri-elite-eagle-warrior))
-    (up-research-status c: ri-elite-eagle-warrior >= research-pending)
-)
-(can-train eagle-warrior)
-(unit-type-count eagle-warrior < 40)
-=>
-(train eagle-warrior )
-(set-goal gl_train_eagle 1)
-)
-
-;camel
-(defrule
-(current-age >= feudal-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(goal gl_train_eagle 0)
-(can-train camel-line)
-(unit-type-count camel-line < 40)
-=>
-(train camel-line )
-(set-goal gl_train_camel 1)
-)
-
-(defrule
-(current-age >= castle-age)
-(goal gl_en_scout 1)
-(goal gl_train_spearman 0)
-(goal gl_train_eagle 0)
-(or 
-    (not (research-completed ri-heavy-camel))
-    (up-research-status c: ri-heavy-camel >= research-pending)
-)
-(can-train camel-line)
-(unit-type-count camel-line < 40)
-=>
-(train camel-line )
-(set-goal gl_train_camel 1)
-)
 
 ;COUNTER SWORDSMAN RULES================================================================================================
 
-;5----------------------------------------------------------------------------------------------------------------
-
 ;hand cannoneer
 (defrule
-(current-age == castle-age)
-(goal gl_en_swordsman 1)
-(can-train hand-cannoneer)
-(unit-type-count hand-cannoneer < 5)
-=>
-(train hand-cannoneer )
-(set-goal gl_train_hand-cannoneer 1)
+    (current-age >= castle-age)
+    (can-train hand-cannoneer)
+    (or
+        (or 
+            (and
+                (unit-type-count hand-cannoneer < 5)
+                (goal gl_en_swordsman 1)
+            )
+            (and
+                (unit-type-count hand-cannoneer < 10)
+                (goal gl_en_swordsman 2)
+            )
+        )
+        (or
+            (and
+                (unit-type-count hand-cannoneer < 20)
+                (goal gl_en_swordsman 3)
+            )
+            (and
+                (unit-type-count hand-cannoneer < 40)
+                (goal gl_en_swordsman 4)
+            )
+        )
+    )
+    =>
+    (train hand-cannoneer )
+    (set-goal gl_train_hand-cannoneer 1)
 )
 
 ;archer
 (defrule
-(current-age == feudal-age)
-(goal gl_en_swordsman 1)
-(goal gl_train_hand-cannoneer 0)
-(can-train archer-line)
-(unit-type-count archer-line < 5)
-=>
-(train archer-line )
-(set-goal gl_train_archer 1)
+    (goal gl_train_hand-cannoneer 0)
+    (can-train archer-line)
+    (or
+        (or
+            (and
+                (current-age >= castle-age)
+                (or 
+                    (not (research-completed ri-crossbow))
+                    (up-research-status c: ri-crossbow >= research-pending)
+                )
+            )
+            (and
+                (current-age >= imperial-age)
+                (or 
+                    (not (research-completed ri-arbalest))
+                    (up-research-status c: ri-arbalest >= research-pending)
+                )
+            )  
+        )
+        (current-age == feudal-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_swordsman 1)
+                (unit-type-count archer-line < 5)
+            )
+            (and
+                (goal gl_en_swordsman 2)
+                (unit-type-count archer-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_swordsman 3)
+                (unit-type-count archer-line < 20)
+            )
+            (and
+                (goal gl_en_swordsman 4)
+                (unit-type-count archer-line < 40)
+            )
+        )
+    )
+    =>
+    (train archer-line )
+    (set-goal gl_train_archer 1)
+)
 )
 
+;cavalry archer
 (defrule
-(current-age > feudal-age)
-(goal gl_en_swordsman 1)
-(goal gl_train_hand-cannoneer 0)
-(or
-    (not (research-completed ri-crossbowman))
-    (up-research-status c: ri-crossbowman >= research-pending)
-)
-(can-train archer-line)
-(unit-type-count archer-line < 5)
-=>
-(train archer-line )
-(set-goal gl_train_archer 1)
+    (goal gl_train_hand-cannoneer 0)
+    (goal gl_train_archer 0)
+    (can-train cavalry-archer-line)
+    (or
+        (and
+            (current-age >= imperial-age)
+            (or 
+                (not (research-completed ri-heavy-cavalry-archer))
+                (up-research-status c: ri-heavy-cavalry-archer >= research-pending)
+            )
+        )
+        (current-age == castle-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_swordsman 1)
+                (unit-type-count cavalry-archer-line < 5)
+            )
+            (and
+                (goal gl_en_swordsman 2)
+                (unit-type-count cavalry-archer-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_swordsman 3)
+                (unit-type-count cavalry-archer-line < 20)
+            )
+            (and
+                (goal gl_en_swordsman 4)
+                (unit-type-count cavalry-archer-line < 40)
+            )
+        )
+    )
+    =>
+    (train cavalry-archer-line )
+    (set-goal gl_train_cavalry-archer 1)
 )
 
-(defrule
-(current-age > castle-age)
-(goal gl_en_swordsman 1)
-(goal gl_train_hand-cannoneer 0)
-(or
-    (not (research-completed ri-arbalester))
-    (up-research-status c: ri-arbalester >= research-pending)
-)
-(can-train archer-line)
-(unit-type-count archer-line < 5)
-=>
-(train archer-line )
-(set-goal gl_train_archer 1)
-)
 
 
-
-;rendu ici
 
 
 
 
 ;COUTER ARCHER RULE================================================================================================
-;5
+
+;eagle
 (defrule
-(or
+    (can-train eagle)
+    (or
+        (or
+            (and
+                (current-age >= castle-age)
+                (or
+                    (not (research-completed ri-eagle-warrior))
+                    (up-research-status c: ri-eagle-warrior >= research-pending)
+                )
+            )
+            (and 
+                (current-age >= imperial-age)
+                (or
+                    (not (research-completed ri-elite-eagle-warrior))
+                    (up-research-status c: ri-elite-eagle-warrior >= research-pending)
+                )
+            )
+        )
+        (current-age == feudal-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_archer 1)
+                (unit-type-count eagle < 5)
+            )
+            (and
+                (goal gl_en_archer 2)
+                (unit-type-count eagle < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_archer 3)
+                (unit-type-count eagle < 20)
+            )
+            (and
+                (goal gl_en_archer 4)
+                (unit-type-count eagle < 40)
+            )
+        )
+    )
+    =>
+    (train eagle )
+    (set-goal gl_train_eagle 1)
+)
+
+;skirmisher
+(defrule
+    (goal gl_train_eagle 0)
+    (can-train skirmisher-line)
     (or
         (and
-            (goal gl_en_spearman 1)
-            (and
-                (not(can-train militiaman-line))
-                (not(research-completed ri-man-at-arms))
+            (current-age >= castle-age)
+            (or
+                (not (research-completed ri-elite-skirmisher))
+                (up-research-status c: ri-elite-skirmisher >= research-pending)
             )
         )
-        (and 
-            (goal gl_en_eagle 1)
+        (current-age == feudal-age)
+    )
+    (or
+        (or
             (and
-                (not(can-train militiaman-line))
-                (not(research-completed ri-man-at-arms))
+                (goal gl_en_archer 1)
+                (unit-type-count skirmisher-line < 5)
+            )
+            (and
+                (goal gl_en_archer 2)
+                (unit-type-count skirmisher-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_archer 3)
+                (unit-type-count skirmisher-line < 20)
+            )
+            (and
+                (goal gl_en_archer 4)
+                (unit-type-count skirmisher-line < 40)
             )
         )
     )
-    (and
-        (goal gl_en_eagle 1)
+    =>
+    (train skirmisher-line )
+    (set-goal gl_train_skirmisher 1)
+)
+
+;scout
+(defrule
+    (goal gl_train_eagle 0)
+    (goal gl_train_skirmisher 0)
+    (can-train scout-line)
+    (or
+        (or
+            (and
+                (current-age >= castle-age)
+                (or
+                    (not (research-completed ri-light-cavalry))
+                    (up-research-status c: ri-light-cavalry >= research-pending)
+                )
+            )
+            (and
+                (current-age >= imperial-age)
+                (or
+                    (not (research-completed ri-hussar))
+                    (up-research-status c: ri-hussar >= research-pending)
+                )
+            ) 
+        )
+        (current-age == feudal-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_archer 1)
+                (unit-type-count scout-line < 5)
+            )
+            (and
+                (goal gl_en_archer 2)
+                (unit-type-count scout-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_archer 3)
+                (unit-type-count scout-line < 20)
+            )
+            (and
+                (goal gl_en_archer 4)
+                (unit-type-count scout-line < 40)
+            )
+        )
+    )
+    =>
+    (train scout-line )
+    (set-goal gl_train_scout 1)
+)
+
+;knight
+(defrule
+    (goal gl_train_eagle 0)
+    (goal gl_train_skirmisher 0)
+    (goal gl_train_scout 0)
+    (can-train knight-line)
+    (or
         (and
-            (not(can-train militiaman-line))
-            (not(research-completed ri-man-at-arms))
+            (current-age >= castle-age)
+            (or
+                (not (research-completed ri-cavalier))
+                (up-research-status c: ri-cavalier >= research-pending)
+            )
+        )
+        (current-age == feudal-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_archer 1)
+                (unit-type-count knight-line < 5)
+            )
+            (and
+                (goal gl_en_archer 2)
+                (unit-type-count knight-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_archer 3)
+                (unit-type-count knight-line < 20)
+            )
+            (and
+                (goal gl_en_archer 4)
+                (unit-type-count knight-line < 40)
+            )
         )
     )
-    
+    =>
+    (train knight-line )
+    (set-goal gl_train_knight 1)
 )
 
-(research-completed ri-crossbow)
-(unit-type-count-total archer-line < 5)
-(can-train archer-line)
-=>
-(train archer-line)
+;COUNTER KNIGHT RULE================================================================================================
+
+;spearmen
+(defrule
+    (can-train spearmen-line)
+    (or
+        (or
+            (and
+                (current-age >= castle-age)
+                (or
+                    (not (research-completed ri-pikeman))
+                    (up-research-status c: ri-pikeman >= research-pending)
+                )
+            )
+            (and
+                (current-age >= imperial-age)
+                (or
+                    (not (research-completed ri-halberdier))
+                    (up-research-status c: ri-halberdier >= research-pending)
+                )
+            )
+        )
+        (current-age == feudal-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_knight 1)
+                (unit-type-count spearmen-line < 5)
+            )
+            (and
+                (goal gl_en_knight 2)
+                (unit-type-count spearmen-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_knight 3)
+                (unit-type-count spearmen-line < 20)
+            )
+            (and
+                (goal gl_en_knight 4)
+                (unit-type-count spearmen-line < 40)
+            )
+        )
+    )
+    =>
+    (train spearmen-line )
+    (set-goal gl_train_spearmen 1)
 )
 
+;camel
+(defrule
+    (goal gl_train_spearmen 0)
+    (can-train camel-line)
+    (or
+        (and
+            (current-age >= imperial-age)
+            (or
+                (not (research-completed ri-heavy-camel))
+                (up-research-status c: ri-heavy-camel >= research-pending)
+            )
+        )
+        (current-age == castle-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_knight 1)
+                (unit-type-count camel-line < 5)
+            )
+            (and
+                (goal gl_en_knight 2)
+                (unit-type-count camel-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_knight 3)
+                (unit-type-count camel-line < 20)
+            )
+            (and
+                (goal gl_en_knight 4)
+                (unit-type-count camel-line < 40)
+            )
+        )
+    )
+    =>
+    (train camel-line )
+    (set-goal gl_train_camel 1)
+)
 
+;COUNTER EAGLE RULE================================================================================================
 
+;militia
+(defrule
+    (can-train militia-line)
+    (or
+        (or
+            (and
+                (current-age >= feudal-age)
+                (or
+                    (not (research-completed ri-man-at-arms))
+                    (up-research-status c: ri-man-at-arms >= research-pending)
+                )
+            )
+            (and
+                (current-age >= castle-age)
+                (or
+                    (not (research-completed ri-long-swordsman))
+                    (up-research-status c: ri-long-swordsman >= research-pending)
+                )
+            )
+        )
+        (and
+            (current-age >= imperial-age)
+            (or
+                (not (research-completed ri-two-handed-swordsman))
+                (up-research-status c: ri-two-handed-swordsman >= research-pending)
+            )
+        )
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_eagle 1)
+                (unit-type-count militia-line < 5)
+            )
+            (and
+                (goal gl_en_eagle 2)
+                (unit-type-count militia-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_eagle 3)
+                (unit-type-count militia-line < 20)
+            )
+            (and
+                (goal gl_en_eagle 4)
+                (unit-type-count militia-line < 40)
+            )
+        )
+    )
+    =>
+    (train militia-line )
+    (set-goal gl_train_militia 1)
+)
 
+;hand-cannoneer
 
+(defrule
+    (goal gl_train_militia 0)
+    (can-train hand-cannoneer-line)
+    (current-age >= castle-age)
+    (or
+        (or
+            (and
+                (goal gl_en_eagle 1)
+                (unit-type-count hand-cannoneer-line < 5)
+            )
+            (and
+                (goal gl_en_eagle 2)
+                (unit-type-count hand-cannoneer-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_eagle 3)
+                (unit-type-count hand-cannoneer-line < 20)
+            )
+            (and
+                (goal gl_en_eagle 4)
+                (unit-type-count hand-cannoneer-line < 40)
+            )
+        )
+    )
+    =>
+    (train hand-cannoneer-line )
+    (set-goal gl_train_hand-cannoneer 1)
+)
 
+;COUNTER HAND CANNONEER RULE================================================================================================
+
+;skirmisher
+(defrule
+    (can-train skirmisher-line)
+    (or
+        (and
+            (current-age >= castle-age)
+            (or
+                (not (research-completed ri-elite-skirmisher))
+                (up-research-status c: ri-elite-skirmisher >= research-pending)
+            )
+        )
+        (current-age == feudal-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_hand-cannoneer 1)
+                (unit-type-count skirmisher-line < 5)
+            )
+            (and
+                (goal gl_en_hand-cannoneer 2)
+                (unit-type-count skirmisher-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_hand-cannoneer 3)
+                (unit-type-count skirmisher-line < 20)
+            )
+            (and
+                (goal gl_en_hand-cannoneer 4)
+                (unit-type-count skirmisher-line < 40)
+            )
+        )
+    )
+    =>
+    (train skirmisher-line )
+    (set-goal gl_train_skirmisher 1)
+)
+
+;cavalry archer
+(defrule
+    (goal gl_train_skirmisher 0)
+    (can-train cavalry-archer-line)
+    (or
+        (and
+            (current-age >= imperial-age)
+            (or
+                (not (research-completed ri-heavy-cavalry-archer))
+                (up-research-status c: ri-heavy-cavalry-archer >= research-pending)
+            )
+        )
+        (current-age == castle-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_hand-cannoneer 1)
+                (unit-type-count cavalry-archer-line < 5)
+            )
+            (and
+                (goal gl_en_hand-cannoneer 2)
+                (unit-type-count cavalry-archer-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_hand-cannoneer 3)
+                (unit-type-count cavalry-archer-line < 20)
+            )
+            (and
+                (goal gl_en_hand-cannoneer 4)
+                (unit-type-count cavalry-archer-line < 40)
+            )
+        )
+    )
+    =>
+    (train cavalry-archer-line )
+    (set-goal gl_train_cavalry-archer 1)
+)
+
+;COUNTER SIEGE RULE================================================================================================
+
+;knight
+(defrule
+    (can-train knight-line)
+    (or
+        (and
+            (current-age >= imperial-age)
+            (or
+                (not (research-completed ri-cavalier))
+                (up-research-status c: ri-cavalier >= research-pending)
+            )
+        )
+        (current-age == castle-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_siege 1)
+                (unit-type-count knight-line < 5)
+            )
+            (and
+                (goal gl_en_siege 2)
+                (unit-type-count knight-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_siege 3)
+                (unit-type-count knight-line < 20)
+            )
+            (and
+                (goal gl_en_siege 4)
+                (unit-type-count knight-line < 40)
+            )
+        )
+    )
+    =>
+    (train knight-line )
+    (set-goal gl_train_knight 1)
+)
+
+;scout
+(defrule
+    (goal gl_train_knight 0)
+    (can-train scout-line)
+    (or
+        (or
+            (and
+                (current-age >= castle-age)
+                (or
+                    (not (research-completed ri-light-cavalry))
+                    (up-research-status c: ri-light-cavalry >= research-pending)
+                )
+            )
+            (and
+                (current-age >= imperial-age)
+                (or
+                    (not (research-completed ri-hussar))
+                    (up-research-status c: ri-hussar >= research-pending)
+                )
+            )
+        )
+        (current-age == feudal-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_siege 1)
+                (unit-type-count scout-line < 5)
+            )
+            (and
+                (goal gl_en_siege 2)
+                (unit-type-count scout-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_siege 3)
+                (unit-type-count scout-line < 20)
+            )
+            (and
+                (goal gl_en_siege 4)
+                (unit-type-count scout-line < 40)
+            )
+        )
+    )
+    =>
+    (train scout-line )
+    (set-goal gl_train_scout 1)
+)
+
+;camel 
+(defrule
+    (goal gl_train_knight 0)
+    (goal gl_train_scout 0)
+    (can-train camel-line)
+    (or
+        (and
+            (current-age >= imperial-age)
+            (or
+                (not (research-completed ri-heavy-camel))
+                (up-research-status c: ri-heavy-camel >= research-pending)
+            )
+        )
+        (current-age == castle-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_siege 1)
+                (unit-type-count camel-line < 5)
+            )
+            (and
+                (goal gl_en_siege 2)
+                (unit-type-count camel-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_siege 3)
+                (unit-type-count camel-line < 20)
+            )
+            (and
+                (goal gl_en_siege 4)
+                (unit-type-count camel-line < 40)
+            )
+        )
+    )
+    =>
+    (train camel-line )
+    (set-goal gl_train_camel 1)
+)
+
+;COUNTER CAVALRY ARCHER RULE================================================================================================
+
+;eagle
+(defrule
+    (can-train eagle-line)
+    (or
+        (or
+            (and
+                (current-age >= castle-age)
+                (or
+                    (not (research-completed ri-eagle-warrior))
+                    (up-research-status c: ri-eagle-warrior >= research-pending)
+                )
+            )
+            (and
+                (current-age >= imperial-age)
+                (or
+                    (not (research-completed ri-elite-eagle-warrior))
+                    (up-research-status c: ri-elite-eagle-warrior >= research-pending)
+                )
+            )
+        )
+        (current-age == feudal-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_cavalry-archer 1)
+                (unit-type-count eagle-line < 5)
+            )
+            (and
+                (goal gl_en_cavalry-archer 2)
+                (unit-type-count eagle-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_cavalry-archer 3)
+                (unit-type-count eagle-line < 20)
+            )
+            (and
+                (goal gl_en_cavalry-archer 4)
+                (unit-type-count eagle-line < 40)
+            )
+        )
+    )
+    =>
+    (train eagle-line )
+    (set-goal gl_train_eagle 1)
+)
+
+;spearmen
+(defrule
+    (goal gl_train_eagle 0)
+    (can-train spearmen-line)
+    (or
+        (or
+            (and
+                (current-age >= imperial-age)
+                (or
+                    (not (research-completed ri-halberdier))
+                    (up-research-status c: ri-halberdier >= research-pending)
+                )
+            )
+            (and
+                (current-age >= castle-age)
+                (or
+                    (not (research-completed ri-pikeman))
+                    (up-research-status c: ri-pikeman >= research-pending)
+                )
+            )
+        )
+        (current-age == feudal-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_cavalry-archer 1)
+                (unit-type-count spearmen-line < 5)
+            )
+            (and
+                (goal gl_en_cavalry-archer 2)
+                (unit-type-count spearmen-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_cavalry-archer 3)
+                (unit-type-count spearmen-line < 20)
+            )
+            (and
+                (goal gl_en_cavalry-archer 4)
+                (unit-type-count spearmen-line < 40)
+            )
+        )
+    )
+    =>
+    (train spearmen-line )
+    (set-goal gl_train_spearmen 1)
+)
+
+;skirmisher
+(defrule
+    (goal gl_train_eagle 0)
+    (goal gl_train_spearmen 0)
+    (can-train skirmisher-line)
+    (or
+        (and
+            (current-age >= castle-age)
+            (or
+                (not (research-completed ri-elite-skirmisher))
+                (up-research-status c: ri-elite-skirmisher >= research-pending)
+            )
+        )
+        (current-age == feudal-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_cavalry-archer 1)
+                (unit-type-count skirmisher-line < 5)
+            )
+            (and
+                (goal gl_en_cavalry-archer 2)
+                (unit-type-count skirmisher-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_cavalry-archer 3)
+                (unit-type-count skirmisher-line < 20)
+            )
+            (and
+                (goal gl_en_cavalry-archer 4)
+                (unit-type-count skirmisher-line < 40)
+            )
+        )
+    )
+    =>
+    (train skirmisher-line )
+    (set-goal gl_train_skirmisher 1)
+)
+
+;knight
+(defrule
+    (goal gl_train_eagle 0)
+    (goal gl_train_spearmen 0)
+    (goal gl_train_skirmisher 0)
+    (can-train knight-line)
+    (or
+        (and
+            (current-age >= imperial-age)
+            (or
+                (not (research-completed ri-cavalier))
+                (up-research-status c: ri-cavalier >= research-pending)
+            )
+        )
+        (current-age == castle-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_cavalry-archer 1)
+                (unit-type-count knight-line < 5)
+            )
+            (and
+                (goal gl_en_cavalry-archer 2)
+                (unit-type-count knight-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_cavalry-archer 3)
+                (unit-type-count knight-line < 20)
+            )
+            (and
+                (goal gl_en_cavalry-archer 4)
+                (unit-type-count knight-line < 40)
+            )
+        )
+    )
+    =>
+    (train knight-line )
+    (set-goal gl_train_knight 1)
+)
+
+;camel
+(defrule
+    (goal gl_train_eagle 0)
+    (goal gl_train_spearmen 0)
+    (goal gl_train_skirmisher 0)
+    (goal gl_train_knight 0)
+    (can-train camel-line)
+    (or
+        (and
+            (current-age >= imperial-age)
+            (or
+                (not (research-completed ri-heavy-camel))
+                (up-research-status c: ri-heavy-camel >= research-pending)
+            )
+        )
+        (current-age == castle-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_cavalry-archer 1)
+                (unit-type-count camel-line < 5)
+            )
+            (and
+                (goal gl_en_cavalry-archer 2)
+                (unit-type-count camel-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_cavalry-archer 3)
+                (unit-type-count camel-line < 20)
+            )
+            (and
+                (goal gl_en_cavalry-archer 4)
+                (unit-type-count camel-line < 40)
+            )
+        )
+    )
+    =>
+    (train camel-line )
+    (set-goal gl_train_camel 1)
+)
+
+;COUNTER CAMEL RULE============================================================
+
+;militia
+(defrule
+    (can-train militia-line)
+    (or
+        (or
+            (and
+                (current-age >= castle-age)
+                (or
+                    (not (research-completed ri-long-swordsman))
+                    (up-research-status c: ri-long-swordsman >= research-pending)
+                )
+            (and
+                (current-age >= imperial-age)
+                (or
+                    (not (research-completed ri-two-handed-swordsman))
+                    (up-research-status c: ri-two-handed-swordsman >= research-pending)
+                )
+            )
+        )
+        )
+        (and
+            (current-age == feudal-age)
+            (or
+                (not (research-completed ri-man-at-arms))
+                (up-research-status c: ri-man-at-arms >= research-pending)
+            )
+        )
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_camel 1)
+                (unit-type-count militia-line < 5)
+            )
+            (and
+                (goal gl_en_camel 2)
+                (unit-type-count militia-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_camel 3)
+                (unit-type-count militia-line < 20)
+            )
+            (and
+                (goal gl_en_camel 4)
+                (unit-type-count militia-line < 40)
+            )
+        )
+    )
+    =>
+    (train militia-line )
+    (set-goal gl_train_militia 1)
+)
+
+;spearman
+(defrule
+    (goal gl_train_militia 0)
+    (can-train spearmen-line)
+    (or
+        (or
+            (and
+                (current-age >= castle-age)
+                (or
+                    (not (research-completed ri-pikeman))
+                        (up-research-status c: ri-pikeman >= research-pending)
+                )
+            )
+            (and
+                (current-age >= imperial-age)
+                (or
+                    (not (research-completed ri-halberdier))
+                    (up-research-status c: ri-halberdier >= research-pending)
+                )
+            )
+        )
+        (current-age == feudal-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_camel 1)
+                (unit-type-count spearmen-line < 5)
+            )
+            (and
+                (goal gl_en_camel 2)
+                (unit-type-count spearmen-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_camel 3)
+                (unit-type-count spearmen-line < 20)
+            )
+            (and
+                (goal gl_en_camel 4)
+                (unit-type-count spearmen-line < 40)
+            )
+        )
+    )
+    =>
+    (train spearmen-line )
+    (set-goal gl_train_spearmen 1)
+)
+
+;archer
+(defrule
+    (goal gl_train_militia 0)
+    (goal gl_train_spearmen 0)
+    (can-train archer-line)
+    (or
+        (or
+            (and
+                (current-age >= castle-age)
+                (or
+                    (not (research-completed ri-crossbow))
+                    (up-research-status c: ri-crossbow >= research-pending)
+                )
+            )
+            (and
+                (current-age >= imperial-age)
+                (or
+                    (not (research-completed ri-arbalest))
+                    (up-research-status c: ri-arbalest >= research-pending)
+                )
+            )
+        )
+        (current-age == feudal-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_camel 1)
+                (unit-type-count archer-line < 5)
+            )
+            (and
+                (goal gl_en_camel 2)
+                (unit-type-count archer-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_camel 3)
+                (unit-type-count archer-line < 20)
+            )
+            (and
+                (goal gl_en_camel 4)
+                (unit-type-count archer-line < 40)
+            )
+        )
+    )
+    =>
+    (train archer-line )
+    (set-goal gl_train_archer 1)
+)
+
+;COUNTER SKIRMISHER RULE======================================================
+;milita
+(defrule
+    (can-train militia-line)
+    (or
+        (or
+            (and
+                (current-age >= castle-age)
+                (or
+                    (not (research-completed ri-long-swordsman))
+                    (up-research-status c: ri-long-swordsman >= research-pending)
+                )
+            )
+            (and
+                (current-age >= imperial-age)
+                (or
+                    (not (research-completed ri-two-handed-swordsman))
+                    (up-research-status c: ri-two-handed-swordsman >= research-pending)
+                )
+            )
+        )
+        (and
+            (current-age == feudal-age)
+            (or
+                (not (research-completed ri-man-at-arms))
+                (up-research-status c: ri-man-at-arms >= research-pending)
+            )
+        )
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_skirmisher 1)
+                (unit-type-count militia-line < 5)
+            )
+            (and
+                (goal gl_en_skirmisher 2)
+                (unit-type-count militia-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_skirmisher 3)
+                (unit-type-count militia-line < 20)
+            )
+            (and
+                (goal gl_en_skirmisher 4)
+                (unit-type-count militia-line < 40)
+            )
+        )
+    )
+    =>
+    (train militia-line )
+    (set-goal gl_train_militia 1)
+)
+
+;eagle
+(defrule
+    (can-train eagle-line)
+    (goal gl_train_militia 0)
+    (or
+        (or
+            (and
+                (current-age >= castle-age)
+                (or
+                    (not (research-completed ri-eagle-warrior))
+                    (up-research-status c: ri-eagle-warrior >= research-pending)
+                )
+            )
+            (and
+                (current-age >= imperial-age)
+                (or
+                    (not (research-completed ri-elite-eagle-warrior))
+                    (up-research-status c: ri-elite-eagle-warrior >= research-pending)
+                )
+            )
+        )
+        (current-age == feudal-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_skirmisher 1)
+                (unit-type-count eagle-line < 5)
+            )
+            (and
+                (goal gl_en_skirmisher 2)
+                (unit-type-count eagle-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_skirmisher 3)
+                (unit-type-count eagle-line < 20)
+            )
+            (and
+                (goal gl_en_skirmisher 4)
+                (unit-type-count eagle-line < 40)
+            )
+        )
+    )
+    =>
+    (train eagle-line )
+    (set-goal gl_train_eagle 1)
+)
+
+;scout
+(defrule
+    (goal gl_train_militia 0)
+    (goal gl_train_eagle 0)
+    (can-train scout-line)
+    (or
+        (or
+            (and
+                (current-age >= castle-age)
+                (or
+                    (not (research-completed ri-light-cavalry))
+                    (up-research-status c: ri-light-cavalry >= research-pending)
+                )
+            )
+            (and
+                (current-age >= imperial-age)
+                (or
+                    (not (research-completed ri-hussar))
+                    (up-research-status c: ri-hussar >= research-pending)
+                )
+            )
+        )
+        (current-age == feudal-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_skirmisher 1)
+                (unit-type-count scout-line < 5)
+            )
+            (and
+                (goal gl_en_skirmisher 2)
+                (unit-type-count scout-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_skirmisher 3)
+                (unit-type-count scout-line < 20)
+            )
+            (and
+                (goal gl_en_skirmisher 4)
+                (unit-type-count scout-line < 40)
+            )
+        )
+    )
+    =>
+    (train scout-line )
+    (set-goal gl_train_scout 1)
+)
+
+;knight
+(defrule
+    (goal gl_train_militia 0)
+    (goal gl_train_eagle 0)
+    (goal gl_train_scout 0)
+    (can-train knight-line)
+    (or
+        (and
+            (current-age >= imperial-age)
+            (or
+                (not (research-completed ri-cavalier))
+                (up-research-status c: ri-cavalier >= research-pending)
+            )
+        )
+        (current-age == castle-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_skirmisher 1)
+                (unit-type-count knight-line < 5)
+            )
+            (and
+                (goal gl_en_skirmisher 2)
+                (unit-type-count knight-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_skirmisher 3)
+                (unit-type-count knight-line < 20)
+            )
+            (and
+                (goal gl_en_skirmisher 4)
+                (unit-type-count knight-line < 40)
+            )
+        )
+    )
+    =>
+    (train knight-line )
+    (set-goal gl_train_knight 1)
+)
+
+;camel
+(defrule
+    (goal gl_train_militia 0)
+    (goal gl_train_eagle 0)
+    (goal gl_train_scout 0)
+    (goal gl_train_knight 0)
+    (can-train camel-line)
+    (or
+        (and
+            (current-age >= imperial-age)
+            (or
+                (not (research-completed ri-heavy-camel))
+                (up-research-status c: ri-heavy-camel >= research-pending)
+            )
+        )
+        (current-age == castle-age)
+    )
+    (or
+        (or
+            (and
+                (goal gl_en_skirmisher 1)
+                (unit-type-count camel-line < 5)
+            )
+            (and
+                (goal gl_en_skirmisher 2)
+                (unit-type-count camel-line < 10)
+            )
+        )
+        (or
+            (and
+                (goal gl_en_skirmisher 3)
+                (unit-type-count camel-line < 20)
+            )
+            (and
+                (goal gl_en_skirmisher 4)
+                (unit-type-count camel-line < 40)
+            )
+        )
+    )
+    =>
+    (train camel-line )
+    (set-goal gl_train_camel 1)
+)
 
 ;================================================================================================
 ;-------------------------------------UPGRADE----------------------------------------------------
